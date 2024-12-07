@@ -1,0 +1,24 @@
+{
+  "name": "sdf",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "start": "vite"
+  },
+  "dependencies": {
+    "@ffmpeg/ffmpeg": "^0.12.10",
+    "@ffmpeg/util": "^0.12.1",
+    "monaco-editor": "^0.52.0",
+    "three": "^0.171.0"
+  },
+  "devDependencies": {
+    "@ffmpeg/types": "^0.12.2",
+    "@sveltejs/vite-plugin-svelte": "^5.0.1",
+    "@types/node": "^22.10.1",
+    "@types/three": "^0.170.0",
+    "svelte": "^5.8.1",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.3"
+  }
+}

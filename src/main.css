@@ -1,0 +1,68 @@
+:root {
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  background: #1a1a1a;
+  color: #eee;
+  cursor: default;
+  font-family: 'Roboto Condensed', monospace;
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.125rem;
+  touch-action: none;
+  overflow: hidden;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -webkit-overflow-scrolling: auto;
+}
+
+:root, body, #app {
+  width: 100%;
+  height: 100%;
+}
+
+button {
+  align-items: center;
+  background: #1a1a1a;
+  border: 1px solid #000;
+  border-radius: 0.25rem;
+  box-sizing: border-box;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  font-family: inherit;
+  font-weight: inherit;
+  justify-content: center;
+  margin: 0;
+  outline: none;
+  padding: 0.5rem;
+}
+
+canvas {
+  height: 100%;
+  vertical-align: middle;
+}
+
+input[type="checkbox"], input[type="range"] {
+  accent-color: #393;
+  cursor: pointer;
+}
+
+input[type="number"], input[type="text"] {
+  background: #1a1a1a;
+  border: 1px solid #000;
+  border-radius: 0.25rem;
+  box-sizing: border-box;
+  color: inherit;
+  font-family: inherit;
+  font-weight: inherit;
+  padding: 0.25rem;
+  width: 100%;
+}

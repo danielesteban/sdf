@@ -17,7 +17,7 @@ uniform float time;
 
 in vec3 ray;
 
-out vec4 fragColor;
+out vec4 outputColor;
 
 struct SDF {
   float distance;
@@ -191,13 +191,13 @@ void main() {
   float distance = cameraNear;
   march(color, distance);
 
-  fragColor = saturate(sRGBTransferOETF(color));
+  outputColor = saturate(sRGBTransferOETF(color));
   float z = (distance >= MAX_DISTANCE) ? cameraFar : (distance * dot(cameraDirection, ray));
   float ndcDepth = -((cameraFar + cameraNear) / (cameraNear - cameraFar)) + ((2.0 * cameraFar * cameraNear) / (cameraNear - cameraFar)) / z;
   gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
 
   #ifdef fog
     float fogFactor = 1.0 - exp(-fogDensity * fogDensity * z * z);
-    fragColor = mix(fragColor, vec4(fogColor, 1.0), fogFactor);
+    outputColor = mix(outputColor, vec4(fogColor, 1.0), fogFactor);
   #endif
 }

@@ -2,8 +2,6 @@
   import Editor from 'ui/Editor.svelte';
   import Viewport from 'ui/Viewport.svelte';
 
-  let renderVideo = $state<() => Promise<void>>(null!);
-
   const onkeydown = (e: KeyboardEvent) => (
     e.key === ' '
     && !['input', 'textarea', 'select'].includes((e.target as HTMLElement).tagName.toLowerCase())
@@ -13,7 +11,7 @@
     e.ctrlKey && e.preventDefault()
   );
 
-  let editorWidth = $state(832);
+  let editorWidth = $state(800);
   let isDragging = $state(false);
   const drag = {
     initial: 0,
@@ -46,14 +44,14 @@
 />
 
 <div class="app">
-  <Editor renderVideo={renderVideo} width={editorWidth} />
+  <Editor width={editorWidth} />
   <div
     class="divider"
     onpointerdown={onpointerdown}
     style={isDragging ? 'background: #393' : ''}
   >
   </div>
-  <Viewport bind:renderVideo={renderVideo} />
+  <Viewport />
 </div>
 
 <style>

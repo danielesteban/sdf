@@ -5,7 +5,7 @@ export const animationDuration = $state({
 });
 
 export const backgroundColor = $state({
-  value: '#FFDBAC',
+  value: '#ffb569',
 });
 
 export const CPUCode = $state({
@@ -51,8 +51,18 @@ export const GPUErrors = $state<{ value: { line?: number; start?: number; end?: 
   value: [],
 });
 
-export const ffmpegIsLoaded = $state({
+export const hasLoadedFFmpeg = $state({
   value: false,
+});
+
+export const isRenderingVideo = $state({
+  value: false,
+});
+
+export const videoRenderingController = $state<{ value?: AbortController }>({});
+
+export const videoRenderingProgress = $state<{ value: { stage: 'encode' | 'render'; progress: number } }>({
+  value: { stage: 'render', progress: 0 },
 });
 
 export const viewportSize = $state({
@@ -63,5 +73,5 @@ export const viewportSize = $state({
 });
 
 loadFFmpeg().then(() => {
-  ffmpegIsLoaded.value = true;
+  hasLoadedFFmpeg.value = true;
 });

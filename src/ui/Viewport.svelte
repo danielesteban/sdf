@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
   import {
     EquirectangularReflectionMapping,
     HalfFloatType,
@@ -11,30 +12,19 @@
   import { Background } from 'core/Background';
   import { Raymarcher } from 'core/Raymarcher';
   import { encodeVideo } from 'core/Video';
-  import { animationDuration, backgroundColor, CPUCode, GPUCode, GPUErrors, ffmpegIsLoaded, viewportSize } from 'ui/State.svelte';
+  import {
+    animationDuration,
+    backgroundColor,
+    CPUCode,
+    GPUCode,
+    GPUErrors,
+    hasLoadedFFmpeg,
+    isRenderingVideo,
+    videoRenderingController,
+    videoRenderingProgress,
+    viewportSize,
+  } from 'ui/State.svelte';
   import Environment from 'textures/venice_sunset_1k.jpg';
-
-  let {
-    renderVideo = $bindable(),
-  } = $props();
-
-  let isRendering = false;
-  renderVideo = async () => {
-    if (!ffmpegIsLoaded.value || !raymarcher || isRendering) {
-      return;
-    }
-    isRendering = true;
-    renderer.setAnimationLoop(null);
-    const blob = await encodeVideo(animationDuration.value, 60, (time) => {
-      raymarcher.render(time);
-      return renderer.domElement.toDataURL();
-    });
-    const downloader = document.createElement('a');
-    downloader.href = URL.createObjectURL(blob);
-    downloader.download = `sdf.mp4`;
-    downloader.click();
-    isRendering = false;
-  };
 
   const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   const renderer = new WebGLRenderer();
@@ -86,9 +76,6 @@
         GPUErrors.value = errors;
       },
     );
-    renderer.setAnimationLoop(() => {
-      raymarcher.render((performance.now() / 1000) % animationDuration.value);
-    });
   });
 
   $effect(() => {
@@ -100,9 +87,64 @@
     if (!raymarcher) return;
     raymarcher.setGPUCode(GPUCode.value);
   });
+
+  $effect(() => {
+    if (!hasLoadedFFmpeg.value || !raymarcher) {
+      return;
+    }
+    if (!isRenderingVideo.value) {
+      renderer.setAnimationLoop(() => {
+        raymarcher.render((performance.now() / 1000) % animationDuration.value);
+      });
+      return;
+    }
+    renderer.setAnimationLoop(null);
+    untrack(() => videoRenderingController.value?.abort());
+    (async () => {
+      const controller = new AbortController();
+      const duration = untrack(() => animationDuration.value);
+      videoRenderingController.value = controller;
+      let blob: Blob | undefined;
+      try {
+        blob = await encodeVideo(controller, duration, 60, (time) => {
+          raymarcher.render(time);
+          return renderer.domElement.toDataURL();
+        }, (stage, progress) => {
+          videoRenderingProgress.value = { stage, progress };
+        });
+      } catch (e) {
+        if (!(e instanceof Error && e.name === 'AbortError')) {
+          throw e;
+        }
+      }
+      isRenderingVideo.value = false;
+      videoRenderingProgress.value = { stage: 'render', progress: 0 };
+      if (!blob) {
+        return;
+      }
+      const downloader = document.createElement('a');
+      downloader.href = URL.createObjectURL(blob);
+      downloader.download = `sdf.mp4`;
+      downloader.click();
+    })();
+  });
+
+  const videoRenderingStages = {
+    render: 'Rendering video...',
+    encode: 'Encoding video...',
+  };
 </script>
 
-<div class="viewport" bind:this={viewport}></div>
+<div class="viewport" bind:this={viewport}>
+  {#if isRenderingVideo.value}
+    <div class="video">
+      <div>{videoRenderingStages[videoRenderingProgress.value.stage]}</div>
+      <div>
+        <progress value={videoRenderingProgress.value.progress}></progress>
+      </div>
+    </div>
+  {/if}
+</div>
 
 <style>
   .viewport {
@@ -110,5 +152,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+  }
+
+  .video {
+    position: absolute;
+    bottom: 1rem;
+    background: #000;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    width: 25%;
+  }
+
+  .video > div > progress {
+    width: 100%;
   }
 </style>

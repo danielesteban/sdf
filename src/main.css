@@ -65,3 +65,7 @@ input[type="number"], input[type="text"] {
   padding: 0.25rem;
   width: 100%;
 }
+
+progress {
+  accent-color: #393;
+}

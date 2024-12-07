@@ -95,13 +95,23 @@
     GPUCode,
     GPUErrors,
     backgroundColor,
+    isRenderingVideo,
+    videoRenderingController,
     viewportSize,
   } from './State.svelte';
 
-  let { renderVideo, width }: { renderVideo: () => Promise<void>; width: number } = $props();
+  let { width }: { width: number } = $props();
 
   const recompile = () => {
     GPUCode.value = editor.getValue();
+  };
+
+  const renderVideo = () => {
+    if (isRenderingVideo.value) {
+      videoRenderingController.value?.abort();
+    } else {
+      isRenderingVideo.value = true;
+    }
   };
 
   const setSize = (width: number, height: number) => () => {
@@ -167,7 +177,7 @@
 <div class="editor" style="width: {width}px">
   <div class="tabs">
     <button class="active">
-      Shader
+      GPU
     </button>
   </div>
   <div class="editorElement" bind:this={editorElement}></div>
@@ -206,8 +216,12 @@
       </button>
     </div>
     <div>
-      <button onclick={renderVideo}>
-        Render Video
+      <button class:abort={isRenderingVideo.value} onclick={renderVideo}>
+        {#if isRenderingVideo.value}
+          Abort Rendering
+        {:else}
+          Render Video
+        {/if}
       </button>
     </div>
   </div>
@@ -246,14 +260,23 @@
     border-radius: 0.25rem;
   }
   .tools {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0.5rem;
     padding: 0.5rem;
   }
   .tools > div {
     display: flex;
     gap: 0.5rem;
+  }
+  .tools > div:nth-child(2) {
+    justify-content: center;
+  }
+  .tools > div:nth-child(3) {
+    justify-content: right;
+  }
+  .tools > div > button.abort {
+    background: #933;
   }
   .tools > div > button.active {
     border-color: #393;

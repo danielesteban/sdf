@@ -53,6 +53,9 @@ class BackgroundMaterial extends RawShaderMaterial {
   `;
 
   private static readonly fragmentShader = /* glsl */`
+    #include <common>
+    #include <colorspace_pars_fragment>
+
     uniform vec3 color;
     uniform sampler2D noise;
     uniform vec2 resolution;
@@ -65,12 +68,14 @@ class BackgroundMaterial extends RawShaderMaterial {
       vec3 granularity = color * 0.03;
       outputColor = vec4(mix(color, color / 3.0, length(vUV - 0.5) * 1.5), 1.0);
       outputColor.rgb += mix(-granularity, granularity, texture(noise, vUV * resolution).r);
+      outputColor = saturate(sRGBTransferOETF(outputColor));
     }
   `;
 
   constructor(precision: string) {
     precision = `precision ${precision} float;`;
     super({
+      name: 'background',
       glslVersion: GLSL3,
       depthTest: false,
       depthWrite: false,

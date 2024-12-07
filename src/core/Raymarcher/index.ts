@@ -117,8 +117,6 @@ export class Raymarcher {
     const material = new RawShaderMaterial({
       name: 'raymarcher',
       glslVersion: GLSL3,
-      vertexShader: precision + raymarcherVertex,
-      fragmentShader: precision + raymarcherFragment.replace('SDF map(const in vec3 p);', '// __USER_CODE__\n' + code),
       transparent: true,
       defines: {
         CUBEUV_MAX_MIP: `${maxMip}.0`,
@@ -141,6 +139,8 @@ export class Raymarcher {
         resolution: { value: new Vector2() },
         time: { value: 0 },
       },
+      vertexShader: precision + raymarcherVertex,
+      fragmentShader: precision + raymarcherFragment.replace('SDF map(const in vec3 p);', '// __USER_CODE__\n' + code),
     });
     material.userData.hasCompiled = false;
     material.userData.hasErrors = false;

@@ -5,18 +5,25 @@ import {
   type PerspectiveCamera,
   PlaneGeometry,
   RawShaderMaterial,
+  Spherical,
   type Texture,
   Vector2,
   Vector3,
   WebGLRenderer,
 } from 'three';
 import { type Background } from 'core/Background';
+import { type Errors } from 'ui/State.svelte';
 import raymarcherFragment from './raymarcher.frag';
 import raymarcherVertex from './raymarcher.vert';
 
 export class Raymarcher {
-  private animate?: (camera: PerspectiveCamera, time: number) => void;
-  private readonly onGPUError: (errors: { line?: number; start?: number; end?: number; message: string }[]) => void;
+  private animate?: (camera: PerspectiveCamera, spherical: Spherical, time: number) => void;
+  private readonly onCPUErrors: (errors: Errors) => void;
+  private readonly onGPUErrors: (errors: Errors) => void;
+  private readonly status = {
+    cpu: { hasErrors: false },
+    gpu: { hasCompiled: false, hasErrors: false },
+  };
   private readonly background: Background;
   private readonly camera: PerspectiveCamera;
   private readonly environment: Texture;
@@ -28,13 +35,15 @@ export class Raymarcher {
     camera: PerspectiveCamera,
     environment: Texture,
     renderer: WebGLRenderer,
-    onGPUError: (errors: { line?: number; start?: number; end?: number; message: string }[]) => void
+    onCPUErrors: (errors: Errors) => void,
+    onGPUErrors: (errors: Errors) => void
   ) {
     this.background = background;
     this.camera = camera;
     this.environment = environment;
     this.renderer = renderer;
-    this.onGPUError = onGPUError;
+    this.onCPUErrors = onCPUErrors;
+    this.onGPUErrors = onGPUErrors;
   
     const mesh = new Mesh(new PlaneGeometry(2, 2, 1, 1), null!);
     mesh.matrixAutoUpdate = false;
@@ -43,13 +52,38 @@ export class Raymarcher {
     this.mesh = mesh;
   }
 
+  private static readonly spherical = new Spherical();
+
   render(time: number) {
-    const { animate, background, camera, mesh, renderer } = this;
-    const { material: { uniforms, userData: { hasCompiled, hasErrors } } } = mesh;
-    if (hasErrors) {
+    const { animate, background, camera, mesh, renderer, status } = this;
+    const { material: { uniforms } } = mesh;
+    if (status.cpu.hasErrors || status.gpu.hasErrors) {
       return;
     }
-    animate?.(camera, time);
+    try {
+      animate?.(camera, Raymarcher.spherical, time);
+    } catch (e) {
+      status.cpu.hasErrors = true;
+      if (e instanceof Error) {
+        const matches = /<anonymous>:(\d+):(\d+)/.exec(e.stack || '');
+        let line: number | undefined;
+        let start: number | undefined;
+        let end: number | undefined;
+        if (matches) {
+          line = parseInt(matches[1], 10);
+          start = parseInt(matches[2], 10);
+          end = start + 1;
+        }
+        this.onCPUErrors([{
+          line,
+          start,
+          end,
+          message: e.message,
+        }]);
+        return;
+      }
+      throw e;
+    }
     camera.getWorldDirection(uniforms.cameraDirection.value);
     uniforms.cameraFar.value = camera.far;
     uniforms.cameraFov.value = MathUtils.degToRad(camera.fov);
@@ -59,12 +93,12 @@ export class Raymarcher {
     renderer.clear();
     background.render(renderer);
     renderer.render(mesh, camera);
-    if (!hasCompiled) {
-      mesh.material.userData.hasCompiled = true;
+    if (!status.gpu.hasCompiled) {
+      status.gpu.hasCompiled = true;
       const program = renderer.info.programs?.find(({ name }) => name === 'raymarcher');
-      const errors: { line?: number; start?: number; end?: number; message: string }[] = [];
+      const errors: Errors = [];
       if ((program as any)?.diagnostics) {
-        mesh.material.userData.hasErrors = true;
+        status.gpu.hasErrors = true;
         const { fragmentShader } = (program as any)?.diagnostics;
         if (fragmentShader.log !== '') {
           fragmentShader.log.split('\n').filter((message: string) => message !== '\x00').forEach((message: string) => {
@@ -73,7 +107,7 @@ export class Raymarcher {
               const gl = renderer.getContext();
               const source = gl.getShaderSource(program!.fragmentShader)!.split('\n');
               const userCodeOffset = source.findIndex((line) => line === '// __USER_CODE__') + 1;
-              const line = parseInt(matches[1]);
+              const line = parseInt(matches[1], 10);
               message = message.slice(`ERROR: 0:${line}: `.length);
               let start = 0;
               let end = 0;
@@ -100,16 +134,30 @@ export class Raymarcher {
           });
         }
       }
-      this.onGPUError(errors);
+      this.onGPUErrors(errors);
     }
   }
 
   setCPUCode(code: string) {
-    this.animate = (new Function('camera', 'time', code) as (camera: PerspectiveCamera, time: number) => void);
+    const { status } = this;
+    try {
+      this.animate = (new Function('camera', 'spherical', 'time', code) as typeof this.animate);
+    } catch (e) {
+      status.cpu.hasErrors = true;
+      if (e instanceof Error) {
+        this.onCPUErrors([{
+          message: e.message,
+        }]);
+        return;
+      }
+      throw e;
+    }
+    status.cpu.hasErrors = false;
+    this.onCPUErrors([]);
   }
 
   setGPUCode(code: string) {
-    const { environment, mesh, renderer } = this;
+    const { environment, mesh, renderer, status } = this;
     const maxMip = Math.log2(environment.image.height) - 2;
     const texelWidth = 1.0 / (3 * Math.max(Math.pow(2, maxMip), 7 * 16));
     const texelHeight = 1.0 / environment.image.height;
@@ -142,8 +190,8 @@ export class Raymarcher {
       vertexShader: precision + raymarcherVertex,
       fragmentShader: precision + raymarcherFragment.replace('SDF map(const in vec3 p);', '// __USER_CODE__\n' + code),
     });
-    material.userData.hasCompiled = false;
-    material.userData.hasErrors = false;
+    status.gpu.hasCompiled = false;
+    status.gpu.hasErrors = false;
     mesh.material?.dispose();
     mesh.material = material;
   }

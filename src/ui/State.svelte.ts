@@ -1,20 +1,39 @@
+import { type editor } from 'monaco-editor/esm/vs/editor/editor.api';
 import { loadFFmpeg } from 'core/Video';
+
+export type Errors = { line?: number; start?: number; end?: number; message: string }[];
+export type File = {
+  code: { value: string };
+  context?: {
+    model: editor.ITextModel,
+    view: editor.ICodeEditorViewState,
+  };
+  errors: { value: Errors };
+  lang: string;
+};
 
 export const animationDuration = $state({
   value: Math.PI * 4,
 });
 
 export const backgroundColor = $state({
-  value: '#ffb569',
+  value: '#FFDBAC',
 });
 
-export const CPUCode = $state({
-  value: `camera.position.set(0, 0, 10);
-`
-});
+const CPUCode = $state({ value: /* js */`spherical.phi = Math.PI * 0.5;
+spherical.theta = Math.sin(time) * Math.PI * 0.5;
+spherical.radius = 10;
+camera.position.setFromSpherical(spherical);
+camera.lookAt(0, 0, 0);
+`});
+const CPUErrors = $state<{ value: Errors }>({ value: [] });
+export const CPU: File = {
+  code: CPUCode,
+  errors: CPUErrors,
+  lang: 'javascript',
+};
 
-export const GPUCode = $state({
-  value: /* glsl */`SDF map(const in vec3 p) {
+const GPUCode = $state({ value: /* glsl */`SDF map(const in vec3 p) {
   vec3 q = p;
   q.x = abs(q.x) - 2.7;
   vec3 o = q - vec3(0.0, sin(time) * -2.5 * (p.x > 0.0 ? 1.0 : -1.0), 0.0);
@@ -44,12 +63,13 @@ export const GPUCode = $state({
   );
   return scene;
 }
-`
-});
-
-export const GPUErrors = $state<{ value: { line?: number; start?: number; end?: number; message: string }[] }>({
-  value: [],
-});
+`});
+const GPUErrors = $state<{ value: Errors }>({ value: [] });
+export const GPU: File = {
+  code: GPUCode,
+  errors: GPUErrors,
+  lang: 'glsl',
+};
 
 export const hasLoadedFFmpeg = $state({
   value: false,

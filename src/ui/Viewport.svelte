@@ -15,9 +15,8 @@
   import {
     animationDuration,
     backgroundColor,
-    CPUCode,
-    GPUCode,
-    GPUErrors,
+    CPU,
+    GPU,
     hasLoadedFFmpeg,
     isRenderingVideo,
     videoRenderingController,
@@ -73,19 +72,22 @@
       environment,
       renderer,
       (errors) => {
-        GPUErrors.value = errors;
+        CPU.errors.value = errors;
+      },
+      (errors) => {
+        GPU.errors.value = errors;
       },
     );
   });
 
   $effect(() => {
     if (!raymarcher) return;
-    raymarcher.setCPUCode(CPUCode.value);
+    raymarcher.setCPUCode(CPU.code.value);
   });
 
   $effect(() => {
     if (!raymarcher) return;
-    raymarcher.setGPUCode(GPUCode.value);
+    raymarcher.setGPUCode(GPU.code.value);
   });
 
   $effect(() => {

@@ -135,28 +135,14 @@
     monaco.editor.setModelMarkers(
       editor.getModel()!,
       'Errors',
-      GPUErrors.value.map(({ line = lastLine, message }) => {
-        const matches = /'(.+)' :/.exec(message);
-        const code = lines[line - 1];
-        let start = 0;
-        let end = 0;
-        if (matches) {
-          const index = code.indexOf(matches[1]);
-          if (index !== -1) {
-            start = index + 1;
-            end = 1 + index + matches[1].length;
-            message = message.slice(`'${matches[1]}' : `.length);
-          }
-        }
-        return {
-          message,
-          startLineNumber: line,
-          endLineNumber: line,
-          startColumn: start,
-          endColumn: end,
-          severity: monaco.MarkerSeverity.Error,
-        };
-      })
+      GPUErrors.value.map(({ line = lastLine, start = 0, end = 0, message }) => ({
+        message,
+        startLineNumber: line,
+        endLineNumber: line,
+        startColumn: start,
+        endColumn: end,
+        severity: monaco.MarkerSeverity.Error,
+      }))
     );
   });
 

@@ -16,7 +16,7 @@ import raymarcherVertex from './raymarcher.vert';
 
 export class Raymarcher {
   private animate?: (camera: PerspectiveCamera, time: number) => void;
-  private readonly onGPUError: (errors: { line?: number; message: string }[]) => void;
+  private readonly onGPUError: (errors: { line?: number; start?: number; end?: number; message: string }[]) => void;
   private readonly background: Background;
   private readonly camera: PerspectiveCamera;
   private readonly environment: Texture;
@@ -28,7 +28,7 @@ export class Raymarcher {
     camera: PerspectiveCamera,
     environment: Texture,
     renderer: WebGLRenderer,
-    onGPUError: (errors: { line?: number; message: string }[]) => void
+    onGPUError: (errors: { line?: number; start?: number; end?: number; message: string }[]) => void
   ) {
     this.background = background;
     this.camera = camera;
@@ -62,21 +62,35 @@ export class Raymarcher {
     if (!hasCompiled) {
       mesh.material.userData.hasCompiled = true;
       const program = renderer.info.programs?.find(({ name }) => name === 'raymarcher');
-      const errors: { line?: number; message: string }[] = [];
+      const errors: { line?: number; start?: number; end?: number; message: string }[] = [];
       if ((program as any)?.diagnostics) {
         mesh.material.userData.hasErrors = true;
         const { fragmentShader } = (program as any)?.diagnostics;
         if (fragmentShader.log !== '') {
           fragmentShader.log.split('\n').filter((message: string) => message !== '\x00').forEach((message: string) => {
-            const matches = /ERROR: 0:(\d+)/.exec(message);
+            let matches = /ERROR: 0:(\d+)/.exec(message);
             if (matches) {
               const gl = renderer.getContext();
-              const source = gl.getShaderSource(program!.fragmentShader)!;
-              const userCodeOffset = source.split('\n').findIndex((line) => line === '// __USER_CODE__') + 1;
+              const source = gl.getShaderSource(program!.fragmentShader)!.split('\n');
+              const userCodeOffset = source.findIndex((line) => line === '// __USER_CODE__') + 1;
               const line = parseInt(matches[1]);
+              message = message.slice(`ERROR: 0:${line}: `.length);
+              let start = 0;
+              let end = 0;
+              matches = /'(.+)' :/.exec(message);
+              const code = source[line - 1];
+              if (matches) {
+                const index = code.indexOf(matches[1]);
+                if (index !== -1) {
+                  start = index + 1;
+                  end = 1 + index + matches[1].length;
+                }
+              }
               errors.push({
                 line: line - userCodeOffset,
-                message: message.slice(`ERROR: 0:${line}: `.length),
+                start,
+                end,
+                message,
               });
             } else {
               errors.push({

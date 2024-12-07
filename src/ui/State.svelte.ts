@@ -47,7 +47,7 @@ export const GPUCode = $state({
 `
 });
 
-export const GPUErrors = $state<{ value: { line?: number; message: string }[] }>({
+export const GPUErrors = $state<{ value: { line?: number; start?: number; end?: number; message: string }[] }>({
   value: [],
 });
 

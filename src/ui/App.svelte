@@ -2,7 +2,7 @@
   import Editor from 'ui/Editor.svelte';
   import Viewport from 'ui/Viewport.svelte';
 
-  let renderVideo: () => Promise<void>;
+  let renderVideo = $state<() => Promise<void>>(null!);
 
   const onkeydown = (e: KeyboardEvent) => (
     e.key === ' '

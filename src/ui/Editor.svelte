@@ -1,9 +1,9 @@
 <script module lang="ts">
+  import 'monaco-editor/esm/vs/basic-languages/javascript/javascript.contribution.js';
   import 'monaco-editor/esm/vs/editor/contrib/find/browser/findController.js';
   import 'monaco-editor/esm/vs/editor/contrib/hover/browser/hoverContribution.js';
   import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
   import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-  import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
   monaco.languages.register({ id: 'glsl' });
   monaco.languages.setLanguageConfiguration('glsl', {
@@ -83,10 +83,7 @@
   });
 
   self.MonacoEnvironment = {
-    getWorker(_, label) {
-      if (label === 'typescript' || label === 'javascript') {
-        return new tsWorker();
-      }
+    getWorker() {
       return new editorWorker();
     },
   };

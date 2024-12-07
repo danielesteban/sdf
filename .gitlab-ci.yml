@@ -1,0 +1,59 @@
+stages:
+  - build-source
+  - build-image
+  - deploy
+
+build-client:
+  stage: build-source
+  image: node:lts
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
+  cache:
+    - key:
+        files:
+          - pnpm-lock.yaml
+      paths:
+        - .pnpm-store
+  before_script:
+    - corepack enable
+    - corepack prepare pnpm@latest-9 --activate
+    - pnpm config set store-dir .pnpm-store
+  script:
+    - pnpm install
+    - pnpm build
+  artifacts:
+    expire_in: 1 hour
+    paths:
+      - dist
+
+build-client-image:
+  stage: build-image
+  image: docker:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: on_success
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker build --pull -t $CI_REGISTRY_IMAGE:${CI_JOB_ID} .
+    - docker push $CI_REGISTRY_IMAGE:${CI_JOB_ID}
+    - echo CLIENT_JOB_ID=${CI_JOB_ID} > client.env
+  artifacts:
+    expire_in: 1 hour
+    reports:
+      dotenv: client.env
+
+deploy:
+  stage: deploy
+  image: curlimages/curl:latest
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: always
+  environment:
+    name: production
+    url: https://sdf.gatunes.com
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - curl -f -s "https://gatunes.com/deployer/?token=${DEPLOY_TOKEN}&client=${CLIENT_JOB_ID}"

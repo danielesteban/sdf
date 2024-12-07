@@ -8,7 +8,12 @@ export const backgroundColor = $state({
   value: '#FFDBAC',
 });
 
-export const code = $state({
+export const CPUCode = $state({
+  value: `camera.position.set(0, 0, 10);
+`
+});
+
+export const GPUCode = $state({
   value: /* glsl */`SDF map(const in vec3 p) {
   vec3 q = p;
   q.x = abs(q.x) - 2.7;
@@ -42,7 +47,7 @@ export const code = $state({
 `
 });
 
-export const errors = $state<{ value: { line?: number; message: string }[] }>({
+export const GPUErrors = $state<{ value: { line?: number; message: string }[] }>({
   value: [],
 });
 

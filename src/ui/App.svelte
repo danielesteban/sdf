@@ -12,17 +12,47 @@
   const onwheel = (e: WheelEvent) => (
     e.ctrlKey && e.preventDefault()
   );
+
+  let editorWidth = $state(832);
+  let isDragging = $state(false);
+  const drag = {
+    initial: 0,
+    offset: 0,
+  };
+  const onpointerdown = (e: PointerEvent) => {
+    isDragging = true;
+    drag.initial = editorWidth;
+    drag.offset = e.clientX;
+  };
+  const onpointermove = (e: PointerEvent) => {
+    if (isDragging) {
+      editorWidth = Math.max(Math.floor(drag.initial + e.clientX - drag.offset), 380);
+    }
+  };
+  const onpointerup = () => {
+    if (isDragging) {
+      isDragging = false;
+    }
+  };
 </script>
 
 <svelte:window 
   on:contextmenu|preventDefault
   on:keydown={onkeydown}
+  on:pointermove={onpointermove}
+  on:pointerup={onpointerup}
   on:touchstart|nonpassive|preventDefault
   on:wheel|nonpassive={onwheel}
 />
 
 <div class="app">
-  <Editor renderVideo={renderVideo} />
+  <Editor renderVideo={renderVideo} width={editorWidth} />
+  <div
+    class="divider"
+    onpointerdown={onpointerdown}
+    style={isDragging ? 'background: #393' : ''}
+  >
+  </div>
   <Viewport bind:renderVideo={renderVideo} />
 </div>
 
@@ -31,6 +61,17 @@
     width: 100%;
     height: 100%;
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto auto 1fr;
+  }
+
+  .divider {
+    width: 0.5rem;
+    border-color: #222;
+    border-style: solid;
+    border-width: 0px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    background-color: #111;
+    cursor: ew-resize;
   }
 </style>

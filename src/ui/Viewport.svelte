@@ -11,7 +11,7 @@
   import { Background } from 'core/Background';
   import { Raymarcher } from 'core/Raymarcher';
   import { encodeVideo } from 'core/Video';
-  import { animationDuration, backgroundColor, code, errors, ffmpegIsLoaded, viewportSize } from 'ui/State.svelte';
+  import { animationDuration, backgroundColor, CPUCode, GPUCode, GPUErrors, ffmpegIsLoaded, viewportSize } from 'ui/State.svelte';
   import Environment from 'textures/venice_sunset_1k.jpg';
 
   let {
@@ -41,6 +41,7 @@
 
   renderer.autoClear = false;
   renderer.sortObjects = false;
+  renderer.domElement.style.maxWidth = renderer.domElement.style.maxHeight = '100%';
 
   let viewport: HTMLDivElement;
   $effect(() => {
@@ -68,6 +69,7 @@
     const aspect = width / height;
     background.setSize(width, height);
     renderer.setSize(width, height, false);
+    renderer.domElement.style.aspectRatio = String(width / height);
     camera.aspect = aspect;
     camera.updateProjectionMatrix();
   });
@@ -80,16 +82,8 @@
       camera,
       environment,
       renderer,
-      (_time) => {
-        camera.position.set(0, 0, 10);
-        // spherical.radius = 13;
-        // spherical.phi = Math.PI * 0.5;
-        // spherical.theta = Math.sin(time) * Math.PI * 0.25;
-        // camera.position.setFromSpherical(spherical);
-        // camera.lookAt(0, 0, 0);
-      },
-      (e) => {
-        errors.value = e;
+      (errors) => {
+        GPUErrors.value = errors;
       },
     );
     renderer.setAnimationLoop(() => {
@@ -99,7 +93,12 @@
 
   $effect(() => {
     if (!raymarcher) return;
-    raymarcher.setCode(code.value);
+    raymarcher.setCPUCode(CPUCode.value);
+  });
+
+  $effect(() => {
+    if (!raymarcher) return;
+    raymarcher.setGPUCode(GPUCode.value);
   });
 </script>
 

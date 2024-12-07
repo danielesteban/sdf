@@ -92,26 +92,17 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import {
-    // animationDuration,
-    code,
-    errors,
-    // backgroundColor,
+    GPUCode,
+    GPUErrors,
+    backgroundColor,
     viewportSize,
   } from './State.svelte';
 
-  let { renderVideo }: { renderVideo: () => Promise<void> } = $props();
+  let { renderVideo, width }: { renderVideo: () => Promise<void>; width: number } = $props();
 
   const recompile = () => {
-    code.value = editor.getValue();
+    GPUCode.value = editor.getValue();
   };
-
-  // const setBackground = () => {
-  //   backgroundColor.value = '#778800';
-  // };
-
-  // const setDuration = () => {
-  //   animationDuration.value = 1;
-  // };
 
   const setSize = (width: number, height: number) => () => {
     viewportSize.value = { width, height };
@@ -119,18 +110,23 @@
 
   let editor: monaco.editor.IStandaloneCodeEditor;
   let editorElement: HTMLDivElement;
+  const resizeEditor = () => editor.layout();
   $effect(() => {
     editor = monaco.editor.create(editorElement, {
       minimap: { enabled: false },
       theme: 'vs-dark',
-      value: untrack(() => code.value),
+      value: untrack(() => GPUCode.value),
       language: 'glsl',
     });
-    const resizeEditor = () => editor.layout();
     window.addEventListener('resize', resizeEditor);
     return () => {
       window.addEventListener('resize', resizeEditor);
     };
+  });
+
+  $effect(() => {
+    width;
+    resizeEditor();
   });
 
   $effect(() => {
@@ -139,7 +135,7 @@
     monaco.editor.setModelMarkers(
       editor.getModel()!,
       'Errors',
-      errors.value.map(({ line = lastLine, message }) => {
+      GPUErrors.value.map(({ line = lastLine, message }) => {
         const matches = /'(.+)' :/.exec(message);
         const code = lines[line - 1];
         let start = 0;
@@ -165,23 +161,30 @@
   });
 
   const onkeydown = (e: KeyboardEvent) => {
-    e.altKey && e.key === 'Enter' && recompile();
-    (e.ctrlKey || e.metaKey) && e.key === 's' && e.preventDefault();
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      recompile();
+    }
+    if (e.altKey && e.key === 'Enter') {
+      recompile();
+    }
   };
+
+  let colorInput: HTMLInputElement;
+  const toggleColorInput = () => (
+    colorInput.click()
+  );
 </script>
 
 <svelte:window onkeydown={onkeydown} />
 
-<div class="editor">
+<div class="editor" style="width: {width}px">
   <div class="tabs">
     <button class="active">
       Shader
     </button>
-    <!-- <button>
-      Camera
-    </button> -->
   </div>
-  <div bind:this={editorElement}></div>
+  <div class="editorElement" bind:this={editorElement}></div>
   <div class="tools">
     <div>
       <button onclick={recompile}>
@@ -189,19 +192,30 @@
       </button>
     </div>
     <div>
-      <!-- <button onclick={setBackground}>
-        Background
-      </button> -->
-      <!-- <button onclick={setDuration}>
-        Duration
-      </button> -->
-      <button onclick={setSize(1080, 1080)}>
+      <button
+        aria-label="background"
+        class="color"
+        onclick={toggleColorInput}
+        style="background: {backgroundColor.value}"
+      >
+        <input type="color" bind:this={colorInput} bind:value={backgroundColor.value} />
+      </button>
+      <button
+        class:active={viewportSize.value.width === 1080 && viewportSize.value.height === 1080}
+        onclick={setSize(1080, 1080)}
+      >
         1:1
       </button>
-      <button onclick={setSize(1080, 1920)}>
+      <button
+        class:active={viewportSize.value.width === 1080 && viewportSize.value.height === 1920}
+        onclick={setSize(1080, 1920)}
+      >
         9:16
       </button>
-      <button onclick={setSize(1920, 1080)}>
+      <button
+        class:active={viewportSize.value.width === 1920 && viewportSize.value.height === 1080}
+        onclick={setSize(1920, 1080)}
+      >
         16:9
       </button>
     </div>
@@ -215,11 +229,13 @@
 
 <style>
   .editor {
-    min-height: 0;
-    width: 700px;
     background-color: #000;
     display: grid;
     grid-template-rows: auto 1fr auto;
+  }
+  .editorElement {
+    min-width: 0;
+    min-height: 0;
   }
   .tabs {
     display: flex;
@@ -252,5 +268,20 @@
   .tools > div {
     display: flex;
     gap: 0.5rem;
+  }
+  .tools > div > button.active {
+    border-color: #393;
+  }
+  .color {
+    position: relative;
+    padding: 0;
+    width: 2.125rem;
+    height: 2.125rem;
+  }
+  .color > input[type="color"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    visibility: hidden;
   }
 </style>

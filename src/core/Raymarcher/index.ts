@@ -15,8 +15,8 @@ import raymarcherFragment from './raymarcher.frag';
 import raymarcherVertex from './raymarcher.vert';
 
 export class Raymarcher {
-  private readonly animate: (time: number) => void;
-  private readonly onerror: (errors: { line?: number; message: string }[]) => void;
+  private animate?: (camera: PerspectiveCamera, time: number) => void;
+  private readonly onGPUError: (errors: { line?: number; message: string }[]) => void;
   private readonly background: Background;
   private readonly camera: PerspectiveCamera;
   private readonly environment: Texture;
@@ -28,15 +28,13 @@ export class Raymarcher {
     camera: PerspectiveCamera,
     environment: Texture,
     renderer: WebGLRenderer,
-    animate: (time: number) => void,
-    onerror: (errors: { line?: number; message: string }[]) => void
+    onGPUError: (errors: { line?: number; message: string }[]) => void
   ) {
-    this.animate = animate;
     this.background = background;
     this.camera = camera;
     this.environment = environment;
     this.renderer = renderer;
-    this.onerror = onerror;
+    this.onGPUError = onGPUError;
   
     const mesh = new Mesh(new PlaneGeometry(2, 2, 1, 1), null!);
     mesh.matrixAutoUpdate = false;
@@ -51,7 +49,7 @@ export class Raymarcher {
     if (hasErrors) {
       return;
     }
-    animate(time);
+    animate?.(camera, time);
     camera.getWorldDirection(uniforms.cameraDirection.value);
     uniforms.cameraFar.value = camera.far;
     uniforms.cameraFov.value = MathUtils.degToRad(camera.fov);
@@ -88,11 +86,15 @@ export class Raymarcher {
           });
         }
       }
-      this.onerror(errors);
+      this.onGPUError(errors);
     }
   }
 
-  setCode(code: string) {
+  setCPUCode(code: string) {
+    this.animate = (new Function('camera', 'time', code) as (camera: PerspectiveCamera, time: number) => void);
+  }
+
+  setGPUCode(code: string) {
     const { environment, mesh, renderer } = this;
     const maxMip = Math.log2(environment.image.height) - 2;
     const texelWidth = 1.0 / (3 * Math.max(Math.pow(2, maxMip), 7 * 16));

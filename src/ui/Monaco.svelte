@@ -115,6 +115,9 @@
     } else {
       editor.setModel(monaco.editor.createModel(untrack(() => file.code.value), file.lang));
     }
+    editor.onDidChangeModelContent(() => {
+      file.errors.value = [];
+    });
     window.addEventListener('resize', resize);
     return () => {
       file.context = {

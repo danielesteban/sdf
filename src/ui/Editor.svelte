@@ -55,13 +55,20 @@
 <svelte:window onkeydown={onkeydown} />
 
 <div class="editor" style="width: {width}px">
-  <div class="tabs">
-    <button class:active={file === 'gpu'} onclick={setFile('gpu')}>
-      GPU
-    </button>
-    <button class:active={file === 'cpu'} onclick={setFile('cpu')}>
-      CPU
-    </button>
+  <div class="topbar">
+    <div class="tabs">
+      <button class:active={file === 'gpu'} onclick={setFile('gpu')}>
+        GPU
+      </button>
+      <button class:active={file === 'cpu'} onclick={setFile('cpu')}>
+        CPU
+      </button>
+    </div>
+    <div>
+      <button onclick={editor.save}>
+        Save
+      </button>
+    </div>
   </div>
   {#if file === 'cpu'}
     <Monaco bind:this={editor} file={CPU} />
@@ -69,11 +76,6 @@
     <Monaco bind:this={editor} file={GPU} />
   {/if}
   <div class="tools">
-    <div>
-      <button onclick={editor.save}>
-        Save
-      </button>
-    </div>
     <div>
       <button
         aria-label="background"
@@ -83,6 +85,8 @@
       >
         <input type="color" bind:this={colorInput} bind:value={backgroundColor.value} />
       </button>
+    </div>
+    <div>
       <button
         class:active={viewportSize.value.width === 1080 && viewportSize.value.height === 1080}
         onclick={setSize(1080, 1080)}
@@ -120,6 +124,16 @@
     display: grid;
     grid-template-rows: auto 1fr auto;
   }
+  .topbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .topbar > div:nth-child(2) {
+    display: flex;
+    padding: 0.5rem;
+    justify-content: right;
+  }
   .tabs {
     display: flex;
   }
@@ -154,6 +168,9 @@
   }
   .tools > div:nth-child(2) {
     justify-content: center;
+  }
+  .tools > div:nth-child(2) > button {
+    width: 2.125rem;
   }
   .tools > div:nth-child(3) {
     justify-content: right;

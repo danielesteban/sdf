@@ -11,7 +11,7 @@
   import { Background } from 'core/Background';
   import { Raymarcher } from 'core/Raymarcher';
   import { encodeVideo } from 'core/Video';
-  import { animationDuration, code, backgroundColor, ffmpegIsLoaded, viewportSize } from 'ui/State.svelte';
+  import { animationDuration, backgroundColor, code, errors, ffmpegIsLoaded, viewportSize } from 'ui/State.svelte';
   import Environment from 'textures/venice_sunset_1k.jpg';
 
   let {
@@ -72,7 +72,7 @@
     camera.updateProjectionMatrix();
   });
 
-  let raymarcher: Raymarcher;
+  let raymarcher = $state<Raymarcher>(null!);
   $effect(() => {
     if (!environment) return;
     raymarcher = new Raymarcher(
@@ -87,16 +87,19 @@
         // spherical.theta = Math.sin(time) * Math.PI * 0.25;
         // camera.position.setFromSpherical(spherical);
         // camera.lookAt(0, 0, 0);
-      }
+      },
+      (e) => {
+        errors.value = e;
+      },
     );
-    raymarcher.setCode(code.value);
     renderer.setAnimationLoop(() => {
       raymarcher.render((performance.now() / 1000) % animationDuration.value);
     });
   });
 
   $effect(() => {
-    raymarcher?.setCode(code.value);
+    if (!raymarcher) return;
+    raymarcher.setCode(code.value);
   });
 </script>
 

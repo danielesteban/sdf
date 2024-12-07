@@ -16,6 +16,7 @@ import raymarcherVertex from './raymarcher.vert';
 
 export class Raymarcher {
   private readonly animate: (time: number) => void;
+  private readonly onerror: (errors: { line?: number; message: string }[]) => void;
   private readonly background: Background;
   private readonly camera: PerspectiveCamera;
   private readonly environment: Texture;
@@ -27,13 +28,15 @@ export class Raymarcher {
     camera: PerspectiveCamera,
     environment: Texture,
     renderer: WebGLRenderer,
-    animate: (time: number) => void
+    animate: (time: number) => void,
+    onerror: (errors: { line?: number; message: string }[]) => void
   ) {
     this.animate = animate;
     this.background = background;
     this.camera = camera;
     this.environment = environment;
     this.renderer = renderer;
+    this.onerror = onerror;
   
     const mesh = new Mesh(new PlaneGeometry(2, 2, 1, 1), null!);
     mesh.matrixAutoUpdate = false;
@@ -44,7 +47,10 @@ export class Raymarcher {
 
   render(time: number) {
     const { animate, background, camera, mesh, renderer } = this;
-    const { material: { uniforms } } = mesh;
+    const { material: { uniforms, userData: { hasCompiled, hasErrors } } } = mesh;
+    if (hasErrors) {
+      return;
+    }
     animate(time);
     camera.getWorldDirection(uniforms.cameraDirection.value);
     uniforms.cameraFar.value = camera.far;
@@ -55,6 +61,35 @@ export class Raymarcher {
     renderer.clear();
     background.render(renderer);
     renderer.render(mesh, camera);
+    if (!hasCompiled) {
+      mesh.material.userData.hasCompiled = true;
+      const program = renderer.info.programs?.find(({ name }) => name === 'raymarcher');
+      const errors: { line?: number; message: string }[] = [];
+      if ((program as any)?.diagnostics) {
+        mesh.material.userData.hasErrors = true;
+        const { fragmentShader } = (program as any)?.diagnostics;
+        if (fragmentShader.log !== '') {
+          fragmentShader.log.split('\n').filter((message: string) => message !== '\x00').forEach((message: string) => {
+            const matches = /ERROR: 0:(\d+)/.exec(message);
+            if (matches) {
+              const gl = renderer.getContext();
+              const source = gl.getShaderSource(program!.fragmentShader)!;
+              const userCodeOffset = source.split('\n').findIndex((line) => line === '// __USER_CODE__') + 1;
+              const line = parseInt(matches[1]);
+              errors.push({
+                line: line - userCodeOffset,
+                message: message.slice(`ERROR: 0:${line}: `.length),
+              });
+            } else {
+              errors.push({
+                message,
+              });
+            }
+          });
+        }
+      }
+      this.onerror(errors);
+    }
   }
 
   setCode(code: string) {
@@ -64,9 +99,10 @@ export class Raymarcher {
     const texelHeight = 1.0 / environment.image.height;
     const precision = `precision ${renderer.capabilities.precision} float;\n`;
     const material = new RawShaderMaterial({
+      name: 'raymarcher',
       glslVersion: GLSL3,
       vertexShader: precision + raymarcherVertex,
-      fragmentShader: precision + raymarcherFragment.replace('SDF map(const in vec3 p);', code),
+      fragmentShader: precision + raymarcherFragment.replace('SDF map(const in vec3 p);', '// __USER_CODE__\n' + code),
       transparent: true,
       defines: {
         CUBEUV_MAX_MIP: `${maxMip}.0`,
@@ -90,6 +126,8 @@ export class Raymarcher {
         time: { value: 0 },
       },
     });
+    material.userData.hasCompiled = false;
+    material.userData.hasErrors = false;
     mesh.material?.dispose();
     mesh.material = material;
   }

@@ -42,6 +42,10 @@ export const code = $state({
 `
 });
 
+export const errors = $state<{ value: { line?: number; message: string }[] }>({
+  value: [],
+});
+
 export const ffmpegIsLoaded = $state({
   value: false,
 });

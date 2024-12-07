@@ -45,6 +45,10 @@ button {
   padding: 0.5rem;
 }
 
+a {
+  color: inherit;
+}
+
 canvas {
   vertical-align: middle;
 }

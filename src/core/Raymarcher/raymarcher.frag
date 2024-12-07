@@ -41,14 +41,42 @@ float sdCapsule(in vec3 p, const in vec3 r) {
   return length(p)-r.x;
 }
 
+float sdCylinder(const in vec3 p, const in float h, const in float r) {
+  vec2 d = abs(vec2(length(p.xz),p.y)) - vec2(r,h);
+  return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+float sdRoundedCylinder(const in vec3 p, const in float ra, const in float rb, const in float h) {
+  vec2 d = vec2(length(p.xz)-2.0*ra+rb, abs(p.y) - h);
+  return min(max(d.x,d.y),0.0) + length(max(d,0.0)) - rb;
+}
+
 float sdEllipsoid(const in vec3 p, const in vec3 r) {
   float k0 = length(p/r);
   float k1 = length(p/(r*r));
   return k0*(k0-1.0)/k1;
 }
 
+float sdOctahedron(in vec3 p, const in float r) {
+  p = abs(p);
+  float m = p.x+p.y+p.z-r;
+  vec3 q;
+       if (3.0*p.x < m) q = p.xyz;
+  else if (3.0*p.y < m) q = p.yzx;
+  else if (3.0*p.z < m) q = p.zxy;
+  else return m*0.57735027;
+    
+  float k = clamp(0.5*(q.z-q.y+r),0.0,r); 
+  return length(vec3(q.x,q.y-r+k,q.z-k)); 
+}
+
 float sdSphere(const in vec3 p, const in float r) {
   return length(p)-r;
+}
+
+float sdTorus(const in vec3 p, const in vec2 r) {
+  vec2 q = vec2(length(p.xz)-r.x,p.y);
+  return length(q)-r.y;
 }
 
 SDF opSmoothUnion(const in SDF a, const in SDF b, const in float k) {

@@ -54,6 +54,10 @@
   <Viewport />
 </div>
 
+<div class="credits">
+  <a href="https://dani.gatunes.com" rel="noopener noreferrer" target="_blank">dani@gatunes</a> © 2024
+</div>
+
 <style>
   .app {
     width: 100%;
@@ -71,5 +75,12 @@
     border-right-width: 1px;
     background-color: #111;
     cursor: ew-resize;
+  }
+
+  .credits {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
   }
 </style>

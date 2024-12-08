@@ -59,7 +59,7 @@
   </div>
   <div>
     <label for="settingsDuration">
-      Duration <span class="time">({Math.round(animationDuration.value)}s)</span>
+      Duration <span class="time">({Math.floor(animationDuration.value)}s)</span>
     </label>
     <div class="options">
       <button

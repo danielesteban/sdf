@@ -24,7 +24,7 @@
   };
   const onpointermove = (e: PointerEvent) => {
     if (isDragging) {
-      editorWidth = Math.max(Math.floor(drag.initial + e.clientX - drag.offset), 424);
+      editorWidth = Math.max(Math.floor(drag.initial + e.clientX - drag.offset), 320);
     }
   };
   const onpointerup = () => {

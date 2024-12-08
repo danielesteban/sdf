@@ -1,3 +1,5 @@
+<script lang="ts"></script>
+
 <div class="doc">
   <div>
     <h5>Primitives</h5>

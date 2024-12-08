@@ -2,35 +2,14 @@ import { type editor } from 'monaco-editor/esm/vs/editor/editor.api';
 import { loadFFmpeg } from 'core/Video';
 import * as Environments from 'textures/Environments';
 
-export type Errors = { line?: number; start?: number; end?: number; message: string }[];
-export type File = {
-  code: { value: string };
-  context: {
-    model: editor.ITextModel;
-    view: editor.ICodeEditorViewState;
-  } | null;
-  errors: { value: Errors };
-  hasModified: { value: boolean };
-  lang: string;
-};
-
-const CPUCode = $state({ value: /* js */`spherical.phi = Math.PI * 0.5;
+const defaultScene = {
+  CPUCode: /* js */`spherical.phi = Math.PI * 0.5;
 spherical.theta = Math.sin(time) * Math.PI * 0.5;
 spherical.radius = 10;
 camera.position.setFromSpherical(spherical);
 camera.lookAt(0, 0, 0);
-`});
-const CPUErrors = $state<{ value: Errors }>({ value: [] });
-const CPUHasModified = $state({ value: false });
-export const CPU: File = {
-  code: CPUCode,
-  context: null,
-  errors: CPUErrors,
-  hasModified: CPUHasModified,
-  lang: 'javascript',
-};
-
-const GPUCode = $state({ value: /* glsl */`SDF map(const in vec3 p) {
+`,
+  GPUCode: /* glsl */`SDF map(const in vec3 p) {
   vec3 q = p;
   q.x = abs(q.x) - 2.7;
   vec3 o = q - vec3(0.0, sin(time) * -2.5 * (p.x > 0.0 ? 1.0 : -1.0), 0.0);
@@ -60,7 +39,38 @@ const GPUCode = $state({ value: /* glsl */`SDF map(const in vec3 p) {
   );
   return scene;
 }
-`});
+`,
+  animationDuration: Math.PI * 4,
+  backgroundColor: '#FFDBAC',
+  environment: 'Sunset',
+  environmentIntensity: 0.5,
+  viewportSize: { width: 1080, height: 1080 },
+};
+
+export type Errors = { line?: number; start?: number; end?: number; message: string }[];
+export type File = {
+  code: { value: string };
+  context: {
+    model: editor.ITextModel;
+    view: editor.ICodeEditorViewState;
+  } | null;
+  errors: { value: Errors };
+  hasModified: { value: boolean };
+  lang: string;
+};
+
+const CPUCode = $state({ value: defaultScene.CPUCode });
+const CPUErrors = $state<{ value: Errors }>({ value: [] });
+const CPUHasModified = $state({ value: false });
+export const CPU: File = {
+  code: CPUCode,
+  context: null,
+  errors: CPUErrors,
+  hasModified: CPUHasModified,
+  lang: 'javascript',
+};
+
+const GPUCode = $state({ value: defaultScene.GPUCode });
 const GPUErrors = $state<{ value: Errors }>({ value: [] });
 const GPUHasModified = $state({ value: false });
 export const GPU: File = {
@@ -72,11 +82,11 @@ export const GPU: File = {
 };
 
 export const animationDuration = $state({
-  value: Math.PI * 4,
+  value: defaultScene.animationDuration,
 });
 
 export const backgroundColor = $state({
-  value: '#FFDBAC',
+  value: defaultScene.backgroundColor,
 });
 
 export const environment = $state<{ value: keyof typeof Environments }>({
@@ -84,7 +94,7 @@ export const environment = $state<{ value: keyof typeof Environments }>({
 });
 
 export const environmentIntensity = $state({
-  value: 0.5,
+  value: defaultScene.environmentIntensity,
 });
 
 export const hasLoadedFFmpeg = $state({
@@ -104,12 +114,13 @@ export const videoRenderingProgress = $state<{ value: { stage: 'encode' | 'rende
 });
 
 export const viewportSize = $state({
-  value: { width: 1080, height: 1080 },
+  value: defaultScene.viewportSize,
 });
 
 const serialize = () => JSON.stringify({
-  cpuCode: CPU.code.value,
-  gpuCode: GPU.code.value,
+  version: 1,
+  CPUCode: CPU.code.value,
+  GPUCode: GPU.code.value,
   animationDuration: animationDuration.value,
   backgroundColor: backgroundColor.value,
   environment: environment.value,
@@ -124,11 +135,11 @@ const deserialize = (json: string) => {
   } catch (e) {
     return;
   }
-  CPU.code.value = data.cpuCode;
+  CPU.code.value = data.CPUCode;
   CPU.context = null;
   CPU.errors.value = [];
   CPU.hasModified.value = false;
-  GPU.code.value = data.gpuCode;
+  GPU.code.value = data.GPUCode;
   GPU.context = null;
   GPU.errors.value = [];
   GPU.hasModified.value = false;
@@ -161,6 +172,10 @@ export const save = () => {
   downloader.href = URL.createObjectURL(new Blob([serialize()], { type: 'application/json' }));
   downloader.download = 'scene.json';
   downloader.click();
+};
+
+export const reset = () => {
+  confirm('Are you sure?') && deserialize(JSON.stringify(defaultScene));
 };
 
 export const store = () => {

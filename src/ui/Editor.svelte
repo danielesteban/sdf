@@ -9,6 +9,7 @@
     videoRenderingController,
     load,
     save,
+    reset,
     store,
   } from 'ui/State.svelte';
 
@@ -85,6 +86,9 @@
       </button>
       <button onclick={save}>
         Export
+      </button>
+      <button onclick={reset}>
+        Reset
       </button>
     </div>
     <div>

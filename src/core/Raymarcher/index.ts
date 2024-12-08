@@ -56,12 +56,13 @@ export class Raymarcher {
 
   render(time: number) {
     const { animate, background, camera, mesh, renderer, status } = this;
+    const { spherical } = Raymarcher;
     const { material: { uniforms } } = mesh;
     if (status.cpu.hasErrors || status.gpu.hasErrors) {
       return;
     }
     try {
-      animate?.(camera, Raymarcher.spherical, time);
+      animate?.(camera, spherical, time);
     } catch (e) {
       status.cpu.hasErrors = true;
       if (e instanceof Error) {
@@ -138,10 +139,22 @@ export class Raymarcher {
     }
   }
 
+  private static readonly globals = [
+    ...Object.keys(window),
+    'globalThis',
+    'ServiceWorker',
+    'ServiceWorkerContainer',
+    'ServiceWorkerRegistration',
+    'SharedWorker',
+    'XMLHttpRequest', 
+    'Worker',
+  ];
+
   setCPUCode(code: string) {
     const { status } = this;
+    const { globals } = Raymarcher;
     try {
-      this.animate = (new Function('camera', 'spherical', 'time', code) as typeof this.animate);
+      this.animate = (new Function('camera', 'spherical', 'time', ...globals, code) as typeof this.animate);
     } catch (e) {
       status.cpu.hasErrors = true;
       if (e instanceof Error) {

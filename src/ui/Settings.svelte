@@ -92,7 +92,7 @@
     <label for="settingsEnvironment">Environment</label>
     <select id="settingsEnvironment" bind:value={environment.value}>
       {#each Object.keys(Environments) as id}
-        <option value={Environments[id as keyof typeof Environments]}>
+        <option value={id}>
           {id}
         </option>
       {/each}

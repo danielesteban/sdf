@@ -5,10 +5,10 @@ import * as Environments from 'textures/Environments';
 export type Errors = { line?: number; start?: number; end?: number; message: string }[];
 export type File = {
   code: { value: string };
-  context?: {
+  context: {
     model: editor.ITextModel;
     view: editor.ICodeEditorViewState;
-  };
+  } | null;
   errors: { value: Errors };
   hasModified: { value: boolean };
   lang: string;
@@ -24,6 +24,7 @@ const CPUErrors = $state<{ value: Errors }>({ value: [] });
 const CPUHasModified = $state({ value: false });
 export const CPU: File = {
   code: CPUCode,
+  context: null,
   errors: CPUErrors,
   hasModified: CPUHasModified,
   lang: 'javascript',
@@ -64,6 +65,7 @@ const GPUErrors = $state<{ value: Errors }>({ value: [] });
 const GPUHasModified = $state({ value: false });
 export const GPU: File = {
   code: GPUCode,
+  context: null,
   errors: GPUErrors,
   hasModified: GPUHasModified,
   lang: 'glsl',
@@ -77,8 +79,8 @@ export const backgroundColor = $state({
   value: '#FFDBAC',
 });
 
-export const environment = $state({
-  value: Environments.Sunset,
+export const environment = $state<{ value: keyof typeof Environments }>({
+  value: 'Sunset',
 });
 
 export const environmentIntensity = $state({
@@ -103,6 +105,83 @@ export const videoRenderingProgress = $state<{ value: { stage: 'encode' | 'rende
 
 export const viewportSize = $state({
   value: { width: 1080, height: 1080 },
+});
+
+const serialize = () => JSON.stringify({
+  cpuCode: CPU.code.value,
+  gpuCode: GPU.code.value,
+  animationDuration: animationDuration.value,
+  backgroundColor: backgroundColor.value,
+  environment: environment.value,
+  environmentIntensity: environmentIntensity.value,
+  viewportSize: viewportSize.value,
+});
+
+const deserialize = (json: string) => {
+  let data;
+  try {
+    data = JSON.parse(json);
+  } catch (e) {
+    return;
+  }
+  CPU.code.value = data.cpuCode;
+  CPU.context = null;
+  CPU.errors.value = [];
+  CPU.hasModified.value = false;
+  GPU.code.value = data.gpuCode;
+  GPU.context = null;
+  GPU.errors.value = [];
+  GPU.hasModified.value = false;
+  animationDuration.value = data.animationDuration;
+  backgroundColor.value = data.backgroundColor;
+  environment.value = data.environment;
+  environmentIntensity.value = data.environmentIntensity;
+  viewportSize.value = data.viewportSize;
+};
+
+const loadFile = (file: Blob) => {
+  const reader = new FileReader();
+  reader.addEventListener('load', () => deserialize(reader.result as string));
+  reader.readAsText(file);
+};
+
+export const load = () => {
+  const loader = document.createElement('input');
+  loader.type = 'file';
+  loader.accept = '.json';
+  loader.addEventListener('change', () => {
+    const file = loader.files?.[0];
+    file && loadFile(file);
+  });
+  loader.click();
+};
+
+export const save = () => {
+  const downloader = document.createElement('a');
+  downloader.href = URL.createObjectURL(new Blob([serialize()], { type: 'application/json' }));
+  downloader.download = 'scene.json';
+  downloader.click();
+};
+
+export const store = () => {
+  localStorage.setItem('sdf:scene', serialize());
+};
+
+const stored = localStorage.getItem('sdf:scene');
+if (stored) {
+  deserialize(stored);
+}
+
+document.addEventListener('dragenter', (e) => e.preventDefault());
+document.addEventListener('dragover', (e) => e.preventDefault());
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  if (!e.dataTransfer) return;
+  const [file] = e.dataTransfer.files;
+  if (!file || file.type.indexOf('application/json') !== 0) {
+    return;
+  }
+  loadFile(file);
 });
 
 loadFFmpeg().then(() => {

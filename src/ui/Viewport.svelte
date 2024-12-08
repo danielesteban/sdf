@@ -12,6 +12,7 @@
   import { Background } from 'core/Background';
   import { Raymarcher } from 'core/Raymarcher';
   import { encodeVideo } from 'core/Video';
+  import * as Environments from 'textures/Environments';
   import {
     CPU,
     GPU,
@@ -57,7 +58,7 @@
   const pmrem = new PMREMGenerator(renderer);
   let envMap = $state<Texture | null>(null);
   $effect(() => {
-    envLoader.load(environment.value, (texture) => {
+    envLoader.load(Environments[environment.value], (texture) => {
       texture.mapping = EquirectangularReflectionMapping;
       envMap = pmrem.fromEquirectangular(texture).texture;
     });
@@ -123,7 +124,7 @@
       }
       const downloader = document.createElement('a');
       downloader.href = URL.createObjectURL(blob);
-      downloader.download = `sdf.mp4`;
+      downloader.download = 'scene.mp4';
       downloader.click();
     })();
   });

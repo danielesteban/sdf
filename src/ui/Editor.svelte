@@ -7,6 +7,9 @@
     GPU,
     isRenderingVideo,
     videoRenderingController,
+    load,
+    save,
+    store,
   } from 'ui/State.svelte';
 
   const { width }: { width: number } = $props();
@@ -31,41 +34,40 @@
       isRenderingVideo.value = true;
     }
   };
+
+  const onbeforeunload = (e: Event) => {
+    if (CPU.hasModified.value || GPU.hasModified.value) {
+      e.preventDefault();
+      return;
+    }
+    store();
+  };
 </script>
 
+<svelte:window {onbeforeunload} />
+
 <div class="editor" style="width: {width}px">
-  <div class="toolbar">
-    <div class="tabs">
-      <button
-        class:active={tab === 'gpu'}
-        class:modified={GPU.hasModified.value}
-        onclick={setTab('gpu')}
-      >
-        GPU
-      </button>
-      <button
-        class:active={tab === 'cpu'}
-        class:modified={CPU.hasModified.value}
-        onclick={setTab('cpu')}
-      >
-        CPU
-      </button>
-      <button class:active={tab === 'settings'} onclick={setTab('settings')}>
-        Settings
-      </button>
-      <button class:active={tab === 'reference'} onclick={setTab('reference')}>
-        Reference
-      </button>
-    </div>
-    <div class="actions">
-      <button class:abort={isRenderingVideo.value} onclick={renderVideo}>
-        {#if isRenderingVideo.value}
-          Abort Rendering
-        {:else}
-          Render Video
-        {/if}
-      </button>
-    </div>
+  <div class="tabs">
+    <button
+      class:active={tab === 'gpu'}
+      class:modified={GPU.hasModified.value}
+      onclick={setTab('gpu')}
+    >
+      GPU
+    </button>
+    <button
+      class:active={tab === 'cpu'}
+      class:modified={CPU.hasModified.value}
+      onclick={setTab('cpu')}
+    >
+      CPU
+    </button>
+    <button class:active={tab === 'settings'} onclick={setTab('settings')}>
+      Settings
+    </button>
+    <button class:active={tab === 'reference'} onclick={setTab('reference')}>
+      Reference
+    </button>
   </div>
   {#if tab === 'cpu'}
     <Monaco bind:this={editor} file={CPU} />
@@ -76,6 +78,25 @@
   {:else if tab === 'settings'}
     <Settings />
   {/if}
+  <div class="actions">
+    <div>
+      <button onclick={load}>
+        Import
+      </button>
+      <button onclick={save}>
+        Export
+      </button>
+    </div>
+    <div>
+      <button class:abort={isRenderingVideo.value} onclick={renderVideo}>
+        {#if isRenderingVideo.value}
+          Abort Rendering
+        {:else}
+          Render Video
+        {/if}
+      </button>
+    </div>
+  </div>
 </div>
 
 <style>
@@ -83,18 +104,21 @@
     min-height: 0;
     background-color: #000;
     display: grid;
-    grid-template-rows: auto 1fr;
-  }
-  .toolbar {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
   }
   .actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     padding: 0.5rem;
+  }
+  .actions > div {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .actions > div:nth-child(2) {
     justify-content: right;
   }
-  .actions > button.abort {
+  .actions > div > button.abort {
     background: #933;
   }
   .tabs {

@@ -90,7 +90,7 @@
 </script>
 
 <script lang="ts">
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import { type File } from 'ui/State.svelte';
 
   const { file }: { file: File } = $props();
@@ -99,9 +99,20 @@
   let editorElement: HTMLDivElement;
 
   export const resize = () => editor.layout();
-  const save = () => {
+  export const update = () => editor.setValue(file.code.value);
+
+  // @dani @hack
+  // This flags are retared.
+  // But I couldn't find another way
+  // to make it work when importing a scene
+  let isFromEditor = false;
+  let isFromUpdate = false;
+  const save = async () => {
+    isFromEditor = true;
     file.code.value = editor.getValue();
     file.hasModified.value = false;
+    await tick();
+    isFromEditor = false;
   };
   const onkeydown = (e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 's') {
@@ -112,6 +123,13 @@
       save();
     }
   };
+
+  $effect(() => {
+    const { value } = file.code;
+    isFromUpdate = true;
+    !isFromEditor && editor?.setValue(value);
+    isFromUpdate = false;
+  });
 
   $effect(() => {
     editor = monaco.editor.create(editorElement, {
@@ -126,6 +144,7 @@
       editor.setModel(monaco.editor.createModel(untrack(() => file.code.value), file.lang));
     }
     editor.onDidChangeModelContent(() => {
+      if (isFromUpdate) return;
       file.errors.value = [];
       file.hasModified.value = true;
     });

@@ -12,12 +12,15 @@ uniform float cameraNear;
 uniform vec3 cameraPosition;
 uniform sampler2D envMap;
 uniform float envMapIntensity;
+uniform int frame;
 uniform vec2 resolution;
 uniform float time;
 
 in vec3 ray;
 
 out vec4 outputColor;
+
+#define ZERO (min(frame,0))
 
 struct SDF {
   float distance;
@@ -109,7 +112,7 @@ SDF opSmoothIntersection(const in SDF a, const in SDF b, const in float k) {
   );
 }
 
-mat3 rotateX(float angle) {
+mat3 rotateX(const in float angle) {
   float s = sin(angle);
   float c = cos(angle);
 
@@ -120,7 +123,7 @@ mat3 rotateX(float angle) {
   );
 }
 
-mat3 rotateY(float angle) {
+mat3 rotateY(const in float angle) {
   float s = sin(angle);
   float c = cos(angle);
 
@@ -131,7 +134,7 @@ mat3 rotateY(float angle) {
   );
 }
 
-mat3 rotateZ(float angle) {
+mat3 rotateZ(const in float angle) {
   float s = sin(angle);
   float c = cos(angle);
 
@@ -144,15 +147,13 @@ mat3 rotateZ(float angle) {
 
 SDF map(const in vec3 p);
 
-vec3 getNormal(const in vec3 p, const in float d) {
-  const vec2 o = vec2(NORMAL_OFFSET, 0);
-  return normalize(
-    d - vec3(
-      map(p - o.xyy).distance,
-      map(p - o.yxy).distance,
-      map(p - o.yyx).distance
-    )
-  );
+vec3 getNormal(const in vec3 p) {
+  vec3 n = vec3(0.0);
+  for(int i = ZERO; i < 4; i++) {
+    vec3 e = 0.5773*(2.0*vec3((((i+3)>>1)&1),((i>>1)&1),(i&1))-1.0);
+    n += e*map(p+NORMAL_OFFSET*e).distance;
+  }
+  return normalize(n);
 }
 
 vec3 getIBLRadiance(const in vec3 viewDir, const in vec3 normal, const in float roughness) {
@@ -201,7 +202,7 @@ void march(inout vec4 color, inout float distance) {
         closest = distance;
       }
       float alpha = smoothstep(cone, -cone, step.distance);
-      vec3 pixel = getLight(position, getNormal(position, step.distance), step.color, step.metalness, step.roughness);
+      vec3 pixel = getLight(position, getNormal(position), step.color, step.metalness, step.roughness);
       color.rgb += coverage * (alpha * pixel);
       coverage *= (1.0 - alpha);
       if (coverage <= MIN_COVERAGE) {

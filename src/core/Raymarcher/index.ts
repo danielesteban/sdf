@@ -26,21 +26,19 @@ export class Raymarcher {
   };
   private readonly background: Background;
   private readonly camera: PerspectiveCamera;
-  private readonly environment: Texture;
+  private readonly envMapIntensity = { value: 0.5 };
   private readonly mesh: Mesh<PlaneGeometry, RawShaderMaterial>;
   private readonly renderer: WebGLRenderer;
 
   constructor(
     background: Background,
     camera: PerspectiveCamera,
-    environment: Texture,
     renderer: WebGLRenderer,
     onCPUErrors: (errors: Errors) => void,
     onGPUErrors: (errors: Errors) => void
   ) {
     this.background = background;
     this.camera = camera;
-    this.environment = environment;
     this.renderer = renderer;
     this.onCPUErrors = onCPUErrors;
     this.onGPUErrors = onGPUErrors;
@@ -57,6 +55,9 @@ export class Raymarcher {
   render(time: number) {
     const { animate, background, camera, mesh, renderer, status } = this;
     const { spherical } = Raymarcher;
+    if (!mesh.material) {
+      return;
+    }
     const { material: { uniforms } } = mesh;
     if (status.cpu.hasErrors || status.gpu.hasErrors) {
       return;
@@ -139,6 +140,11 @@ export class Raymarcher {
     }
   }
 
+  setEnvMapIntensity(intensity: number) {
+    const { envMapIntensity } = this;
+    envMapIntensity.value = intensity;
+  }
+
   private static readonly globals = [
     ...Object.keys(window),
     'globalThis',
@@ -169,11 +175,11 @@ export class Raymarcher {
     this.onCPUErrors([]);
   }
 
-  setGPUCode(code: string) {
-    const { environment, mesh, renderer, status } = this;
-    const maxMip = Math.log2(environment.image.height) - 2;
+  setGPUCode(code: string, envMap: Texture) {
+    const { envMapIntensity, mesh, renderer, status } = this;
+    const maxMip = Math.log2(envMap.image.height) - 2;
     const texelWidth = 1.0 / (3 * Math.max(Math.pow(2, maxMip), 7 * 16));
-    const texelHeight = 1.0 / environment.image.height;
+    const texelHeight = 1.0 / envMap.image.height;
     const precision = `precision ${renderer.capabilities.precision} float;\n`;
     const material = new RawShaderMaterial({
       name: 'raymarcher',
@@ -195,8 +201,8 @@ export class Raymarcher {
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
         cameraNear: { value: 0 },
-        envMap: { value: environment },
-        envMapIntensity: { value: 0.5 },
+        envMap: { value: envMap },
+        envMapIntensity: envMapIntensity,
         resolution: { value: new Vector2() },
         time: { value: 0 },
       },

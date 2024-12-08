@@ -99,8 +99,18 @@
   let editorElement: HTMLDivElement;
 
   export const resize = () => editor.layout();
-  export const save = () => {
+  const save = () => {
     file.code.value = editor.getValue();
+    file.hasModified.value = false;
+  };
+  const onkeydown = (e: KeyboardEvent) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+      e.preventDefault();
+      save();
+    }
+    if (e.altKey && e.key === 'Enter') {
+      save();
+    }
   };
 
   $effect(() => {
@@ -117,6 +127,7 @@
     }
     editor.onDidChangeModelContent(() => {
       file.errors.value = [];
+      file.hasModified.value = true;
     });
     window.addEventListener('resize', resize);
     return () => {
@@ -145,6 +156,8 @@
     );
   });
 </script>
+
+<svelte:window onkeydown={onkeydown} />
 
 <div class="editorElement" bind:this={editorElement}></div>
 

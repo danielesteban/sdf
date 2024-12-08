@@ -1,24 +1,18 @@
 import { type editor } from 'monaco-editor/esm/vs/editor/editor.api';
 import { loadFFmpeg } from 'core/Video';
+import * as Environments from 'textures/Environments';
 
 export type Errors = { line?: number; start?: number; end?: number; message: string }[];
 export type File = {
   code: { value: string };
   context?: {
-    model: editor.ITextModel,
-    view: editor.ICodeEditorViewState,
+    model: editor.ITextModel;
+    view: editor.ICodeEditorViewState;
   };
   errors: { value: Errors };
+  hasModified: { value: boolean };
   lang: string;
 };
-
-export const animationDuration = $state({
-  value: Math.PI * 4,
-});
-
-export const backgroundColor = $state({
-  value: '#FFDBAC',
-});
 
 const CPUCode = $state({ value: /* js */`spherical.phi = Math.PI * 0.5;
 spherical.theta = Math.sin(time) * Math.PI * 0.5;
@@ -27,9 +21,11 @@ camera.position.setFromSpherical(spherical);
 camera.lookAt(0, 0, 0);
 `});
 const CPUErrors = $state<{ value: Errors }>({ value: [] });
+const CPUHasModified = $state({ value: false });
 export const CPU: File = {
   code: CPUCode,
   errors: CPUErrors,
+  hasModified: CPUHasModified,
   lang: 'javascript',
 };
 
@@ -65,11 +61,29 @@ const GPUCode = $state({ value: /* glsl */`SDF map(const in vec3 p) {
 }
 `});
 const GPUErrors = $state<{ value: Errors }>({ value: [] });
+const GPUHasModified = $state({ value: false });
 export const GPU: File = {
   code: GPUCode,
   errors: GPUErrors,
+  hasModified: GPUHasModified,
   lang: 'glsl',
 };
+
+export const animationDuration = $state({
+  value: Math.PI * 4,
+});
+
+export const backgroundColor = $state({
+  value: '#FFDBAC',
+});
+
+export const environment = $state({
+  value: Environments.Sunset,
+});
+
+export const environmentIntensity = $state({
+  value: 0.5,
+});
 
 export const hasLoadedFFmpeg = $state({
   value: false,
@@ -79,17 +93,16 @@ export const isRenderingVideo = $state({
   value: false,
 });
 
-export const videoRenderingController = $state<{ value?: AbortController }>({});
+export const videoRenderingController = $state<{ value: AbortController | null }>({
+  value: null,
+});
 
 export const videoRenderingProgress = $state<{ value: { stage: 'encode' | 'render'; progress: number } }>({
   value: { stage: 'render', progress: 0 },
 });
 
 export const viewportSize = $state({
-  value: {
-    width: 1080,
-    height: 1080,
-  },
+  value: { width: 1080, height: 1080 },
 });
 
 loadFFmpeg().then(() => {

@@ -13,40 +13,29 @@
   import { Raymarcher } from 'core/Raymarcher';
   import { encodeVideo } from 'core/Video';
   import {
-    animationDuration,
-    backgroundColor,
     CPU,
     GPU,
+    animationDuration,
+    backgroundColor,
+    environment,
+    environmentIntensity,
     hasLoadedFFmpeg,
     isRenderingVideo,
     videoRenderingController,
     videoRenderingProgress,
     viewportSize,
   } from 'ui/State.svelte';
-  import Environment from 'textures/venice_sunset_1k.jpg';
 
   const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   const renderer = new WebGLRenderer();
-
   renderer.autoClear = false;
-  renderer.sortObjects = false;
   renderer.domElement.style.maxWidth = renderer.domElement.style.maxHeight = '100%';
+  renderer.sortObjects = false;
 
   let viewport: HTMLDivElement;
   $effect(() => {
     viewport.appendChild(renderer.domElement);
   });
-
-  let environment = $state<Texture>(null!);
-  {
-    const pmrem = new PMREMGenerator(renderer);
-    const loader = new UltraHDRLoader();
-    loader.setDataType(HalfFloatType);
-    loader.load(Environment, (texture) => {
-      texture.mapping = EquirectangularReflectionMapping;
-      environment = pmrem.fromEquirectangular(texture).texture;
-    });
-  }
 
   const background = new Background(renderer.capabilities.precision);
   $effect(() => {
@@ -63,43 +52,51 @@
     camera.updateProjectionMatrix();
   });
 
-  let raymarcher = $state<Raymarcher>(null!);
+  const envLoader = new UltraHDRLoader();
+  envLoader.setDataType(HalfFloatType);
+  const pmrem = new PMREMGenerator(renderer);
+  let envMap = $state<Texture | null>(null);
   $effect(() => {
-    if (!environment) return;
-    raymarcher = new Raymarcher(
-      background,
-      camera,
-      environment,
-      renderer,
-      (errors) => {
-        CPU.errors.value = errors;
-      },
-      (errors) => {
-        GPU.errors.value = errors;
-      },
-    );
+    envLoader.load(environment.value, (texture) => {
+      texture.mapping = EquirectangularReflectionMapping;
+      envMap = pmrem.fromEquirectangular(texture).texture;
+    });
+  });
+
+  const raymarcher = new Raymarcher(
+    background,
+    camera,
+    renderer,
+    (errors) => {
+      CPU.errors.value = errors;
+    },
+    (errors) => {
+      GPU.errors.value = errors;
+    },
+  );
+
+  $effect(() => {
+    raymarcher.setEnvMapIntensity(environmentIntensity.value);
   });
 
   $effect(() => {
-    if (!raymarcher) return;
     raymarcher.setCPUCode(CPU.code.value);
   });
 
   $effect(() => {
-    if (!raymarcher) return;
-    raymarcher.setGPUCode(GPU.code.value);
+    if (!envMap) return;
+    raymarcher.setGPUCode(GPU.code.value, envMap);
   });
 
   $effect(() => {
-    if (!hasLoadedFFmpeg.value || !raymarcher) {
-      return;
-    }
-    if (!isRenderingVideo.value) {
-      renderer.setAnimationLoop(() => {
-        raymarcher.render((performance.now() / 1000) % animationDuration.value);
-      });
-      return;
-    }
+    if (isRenderingVideo.value) return;
+    renderer.setAnimationLoop(() => (
+      raymarcher.render((performance.now() / 1000) % animationDuration.value)
+    ));
+  });
+
+  $effect(() => {
+    if (!isRenderingVideo.value || !hasLoadedFFmpeg.value) return;
     renderer.setAnimationLoop(null);
     untrack(() => videoRenderingController.value?.abort());
     (async () => {

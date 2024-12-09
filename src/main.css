@@ -86,3 +86,23 @@ progress {
 select {
   cursor: pointer;
 }
+
+::-webkit-scrollbar {
+  width: 0.875rem;
+}
+
+::-webkit-scrollbar-track {
+  border-left: 1px solid #2d2d2d;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #424242;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4f4f4f;
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: #5e5e5e;
+}

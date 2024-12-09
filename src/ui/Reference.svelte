@@ -2,6 +2,12 @@
 
 <div class="doc">
   <div>
+    <h5>Types</h5>
+    <ul>
+      <li>SDF(float distance, vec3 color, float metalness, float roughness)</li>
+    </ul>
+  </div>
+  <div>
     <h5>Primitives</h5>
     <ul>
       <li>float sdBox(vec3 p, vec3 r)</li>

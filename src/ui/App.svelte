@@ -47,8 +47,8 @@
   <Editor width={editorWidth} />
   <div
     class="divider"
+    class:dragging={isDragging}
     onpointerdown={onpointerdown}
-    style={isDragging ? 'background: #393' : ''}
   >
   </div>
   <Viewport />
@@ -68,13 +68,15 @@
 
   .divider {
     width: 0.5rem;
-    border-color: #222;
-    border-style: solid;
-    border-width: 0px;
+    background-color: #111;
+    border: 0 solid #2d2d2d;
     border-left-width: 1px;
     border-right-width: 1px;
-    background-color: #111;
     cursor: ew-resize;
+  }
+
+  .divider.dragging {
+    background-color: #5e5e5e;
   }
 
   .credits {

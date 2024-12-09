@@ -6,7 +6,7 @@
     environment,
     environmentIntensity,
     viewportSize,
-  } from 'ui/State.svelte';
+  } from 'core/Scene.svelte';
 
   const setDuration = (time: number) => () => {
     animationDuration.value = time;

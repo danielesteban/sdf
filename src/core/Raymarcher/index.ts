@@ -12,7 +12,7 @@ import {
   WebGLRenderer,
 } from 'three';
 import { type Background } from 'core/Background';
-import { type Errors } from 'ui/State.svelte';
+import { type Errors } from 'core/Scene.svelte';
 import raymarcherFragment from './raymarcher.frag';
 import raymarcherVertex from './raymarcher.vert';
 

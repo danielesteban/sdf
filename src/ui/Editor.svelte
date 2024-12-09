@@ -1,7 +1,4 @@
 <script lang="ts">
-  import Monaco from 'ui/Monaco.svelte';
-  import Reference from 'ui/Reference.svelte';
-  import Settings from 'ui/Settings.svelte';
   import {
     CPU,
     GPU,
@@ -10,7 +7,10 @@
     load,
     save,
     reset,
-  } from 'ui/State.svelte';
+  } from 'core/Scene.svelte';
+  import Monaco from 'ui/Monaco.svelte';
+  import Reference from 'ui/Reference.svelte';
+  import Settings from 'ui/Settings.svelte';
 
   const { width }: { width: number } = $props();
 

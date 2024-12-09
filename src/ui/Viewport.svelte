@@ -11,8 +11,6 @@
   import { UltraHDRLoader } from 'three/examples/jsm/loaders/UltraHDRLoader.js';
   import { Background } from 'core/Background';
   import { Raymarcher } from 'core/Raymarcher';
-  import { encodeVideo } from 'core/Video';
-  import * as Environments from 'textures/Environments';
   import {
     CPU,
     GPU,
@@ -25,7 +23,9 @@
     videoRenderingController,
     videoRenderingProgress,
     viewportSize,
-  } from 'ui/State.svelte';
+  } from 'core/Scene.svelte';
+  import { encodeVideo } from 'core/Video';
+  import * as Environments from 'textures/Environments';
 
   const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
   const renderer = new WebGLRenderer();

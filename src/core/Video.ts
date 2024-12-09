@@ -19,10 +19,10 @@ export const encodeVideo = async (
   render: (time: number) => string,
   onprogress: (stage: 'encode' | 'render', progress: number) => void
 ) => {
-  const frames = duration * fps;
+  const frames = Math.floor(duration * fps);
   for (let frame = 0; frame < frames; frame++) {
     onprogress('render', frame / frames);
-    await ffmpeg.writeFile(`${String(frame).padStart(5, '0')}.png`, await fetchFile(render(duration / frames * frame)));
+    await ffmpeg.writeFile(`${String(frame).padStart(5, '0')}.png`, await fetchFile(render(frame / fps)));
     if (controller.signal.aborted) {
       const error = new Error();
       error.name = 'AbortError';

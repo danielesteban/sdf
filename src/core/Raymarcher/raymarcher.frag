@@ -11,6 +11,7 @@ uniform float cameraFar;
 uniform float cameraFov;
 uniform float cameraNear;
 uniform vec3 cameraPosition;
+uniform float duration;
 uniform sampler2D envMap;
 uniform float envMapIntensity;
 uniform int frame;

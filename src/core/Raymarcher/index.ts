@@ -30,6 +30,7 @@ export class Raymarcher {
   };
   private readonly background: Background;
   private readonly camera: PerspectiveCamera;
+  private readonly duration = { value: 0 };
   private readonly envMapIntensity = { value: 0.5 };
   private readonly mesh: Mesh<PlaneGeometry, RawShaderMaterial>;
   private readonly renderer: WebGLRenderer;
@@ -144,9 +145,14 @@ export class Raymarcher {
     }
   }
 
-  setEnvMapIntensity(intensity: number) {
+  setDuration(value: number) {
+    const { duration } = this;
+    duration.value = value;
+  }
+
+  setEnvMapIntensity(value: number) {
     const { envMapIntensity } = this;
-    envMapIntensity.value = intensity;
+    envMapIntensity.value = value;
   }
 
   private static readonly globals = [
@@ -180,7 +186,7 @@ export class Raymarcher {
   }
 
   setGPUCode(code: string, envMap: Texture) {
-    const { envMapIntensity, mesh, renderer, status } = this;
+    const { duration, envMapIntensity, mesh, renderer, status } = this;
     const maxMip = Math.log2(envMap.image.height) - 2;
     const texelWidth = 1.0 / (3 * Math.max(Math.pow(2, maxMip), 7 * 16));
     const texelHeight = 1.0 / envMap.image.height;
@@ -205,8 +211,9 @@ export class Raymarcher {
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
         cameraNear: { value: 0 },
+        duration,
         envMap: { value: envMap },
-        envMapIntensity: envMapIntensity,
+        envMapIntensity,
         resolution: { value: new Vector2() },
         time: { value: 0 },
       },

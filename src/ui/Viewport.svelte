@@ -80,6 +80,10 @@
   );
 
   $effect(() => {
+    raymarcher.setDuration(animationDuration.value);
+  });
+
+  $effect(() => {
     raymarcher.setEnvMapIntensity(environmentIntensity.value);
   });
 

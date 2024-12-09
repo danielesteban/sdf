@@ -29,7 +29,7 @@ camera.lookAt(0, 0, 0);
   d = (
     sin(o.y * 10.0) * sin(time) * 0.05
   ) + (
-    simplex(o + time) * 0.1
+    simplex(o + (time > duration * 0.5 ? duration - time : time)) * 0.1
   );
   scene = opSmoothUnion(
     scene,

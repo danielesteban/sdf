@@ -19,18 +19,15 @@
 
   const drag = { initial: 0, offset: 0 };
   let editorWidth = $state(800);
-  let isDragging = $state(false);
   const onpointerdown: PointerEventHandler<HTMLDivElement> = (e) => {
     e.currentTarget.setPointerCapture(e.pointerId);
     e.currentTarget.addEventListener('pointermove', onpointermove);
-    isDragging = true;
     drag.initial = editorWidth;
     drag.offset = e.clientX;
   };
   const onpointerup: PointerEventHandler<HTMLDivElement> = (e) => {
     e.currentTarget.releasePointerCapture(e.pointerId);
     e.currentTarget.removeEventListener('pointermove', onpointermove);
-    isDragging = false;
   };
   const onpointermove = (e: PointerEvent) => {
     editorWidth = Math.max(Math.floor(drag.initial + e.clientX - drag.offset), 320);
@@ -48,7 +45,6 @@
   <Editor width={editorWidth} />
   <div
     class="divider"
-    class:dragging={isDragging}
     onpointerdown={onpointerdown}
     onpointerup={onpointerup}
     onlostpointercapture={onpointerup}
@@ -68,7 +64,12 @@
     display: grid;
     grid-template-columns: auto auto 1fr;
   }
-
+  .credits {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  }
   .divider {
     width: 0.5rem;
     background-color: #111;
@@ -77,15 +78,10 @@
     border-right-width: 1px;
     cursor: ew-resize;
   }
-
-  .divider.dragging {
-    background-color: #5e5e5e;
+  .divider:hover {
+    background-color: #4f4f4f;
   }
-
-  .credits {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+  .divider:active {
+    background-color: #5e5e5e;
   }
 </style>

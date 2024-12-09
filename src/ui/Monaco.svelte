@@ -143,7 +143,7 @@
 
 <script lang="ts">
   import { tick, untrack } from 'svelte';
-  import { type File } from 'ui/State.svelte';
+  import { type File } from 'core/Scene.svelte';
 
   const { file }: { file: File } = $props();
 

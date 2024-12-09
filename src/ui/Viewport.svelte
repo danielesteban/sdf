@@ -154,7 +154,6 @@
     justify-content: center;
     position: relative;
   }
-
   .video {
     position: absolute;
     bottom: 1rem;
@@ -163,7 +162,6 @@
     padding: 0.5rem;
     width: 25%;
   }
-
   .video > div > progress {
     width: 100%;
   }

@@ -11,12 +11,9 @@
     e.ctrlKey && e.preventDefault()
   );
 
+  const drag = { initial: 0, offset: 0 };
   let editorWidth = $state(800);
   let isDragging = $state(false);
-  const drag = {
-    initial: 0,
-    offset: 0,
-  };
   const onpointerdown = (e: PointerEvent) => {
     isDragging = true;
     drag.initial = editorWidth;

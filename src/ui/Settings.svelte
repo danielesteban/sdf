@@ -5,11 +5,36 @@
     backgroundColor,
     environment,
     environmentIntensity,
+    viewportScale,
     viewportSize,
   } from 'core/Scene.svelte';
 
-  const setDuration = (time: number) => () => {
-    animationDuration.value = time;
+  const aspectRatios = [
+    { name: '1:1', width: 1080, height: 1080 },
+    { name: '9:16', width: 1080, height: 1920 },
+    { name: '16:9', width: 1920, height: 1080 },
+  ];
+
+  const durations = [
+    { name: '1x', value: Math.PI * 2 },
+    { name: '2x', value: Math.PI * 4 },
+    { name: '3x', value: Math.PI * 6 },
+    { name: '4x', value: Math.PI * 8 },
+  ];
+
+  const scales = [
+    { name: '1x', value: 1 },
+    { name: '2x', value: 0.5 },
+    { name: '3x', value: 0.25 },
+    { name: '4x', value: 0.125 },
+  ];
+
+  const setDuration = (value: number) => () => {
+    animationDuration.value = value;
+  };
+
+  const setScale = (value: number) => () => {
+    viewportScale.value = value;
   };
 
   const setSize = (width: number, height: number) => () => {
@@ -26,24 +51,14 @@
   <div>
     <label for="settingsAspectRatio">Aspect Ratio</label>
     <div class="options">
-      <button
-        class:active={viewportSize.value.width === 1080 && viewportSize.value.height === 1080}
-        onclick={setSize(1080, 1080)}
-      >
-        1:1
-      </button>
-      <button
-        class:active={viewportSize.value.width === 1080 && viewportSize.value.height === 1920}
-        onclick={setSize(1080, 1920)}
-      >
-        9:16
-      </button>
-      <button
-        class:active={viewportSize.value.width === 1920 && viewportSize.value.height === 1080}
-        onclick={setSize(1920, 1080)}
-      >
-        16:9
-      </button>
+      {#each aspectRatios as { name, width, height }}
+        <button
+          class:active={viewportSize.value.width === width && viewportSize.value.height === height}
+          onclick={setSize(width, height)}
+        >
+          {name}
+        </button>
+      {/each}
     </div>
   </div>
   <div>
@@ -56,37 +71,6 @@
     >
       <input type="color" bind:this={colorInput} bind:value={backgroundColor.value} />
     </button>
-  </div>
-  <div>
-    <label for="settingsDuration">
-      Duration <span class="time">({Math.floor(animationDuration.value)}s)</span>
-    </label>
-    <div class="options">
-      <button
-        class:active={animationDuration.value === Math.PI * 2}
-        onclick={setDuration(Math.PI * 2)}
-      >
-        1x
-      </button>
-      <button
-        class:active={animationDuration.value === Math.PI * 4}
-        onclick={setDuration(Math.PI * 4)}
-      >
-        2x
-      </button>
-      <button
-        class:active={animationDuration.value === Math.PI * 6}
-        onclick={setDuration(Math.PI * 6)}
-      >
-        3x
-      </button>
-      <button
-        class:active={animationDuration.value === Math.PI * 8}
-        onclick={setDuration(Math.PI * 8)}
-      >
-        4x
-      </button>
-    </div>
   </div>
   <div>
     <label for="settingsEnvironment">Environment</label>
@@ -108,6 +92,34 @@
       step={0.01}
       bind:value={environmentIntensity.value}
     />
+  </div>
+  <div>
+    <label for="settingsLoopDuration">
+      Loop Duration <span class="time">({Math.floor(animationDuration.value)}s)</span>
+    </label>
+    <div class="options">
+      {#each durations as { name, value }}
+        <button
+          class:active={animationDuration.value === value}
+          onclick={setDuration(value)}
+        >
+          {name}
+        </button>
+      {/each}
+    </div>
+  </div>
+  <div>
+    <label for="settingsPreviewScale">Preview Downscaling</label>
+    <div class="options">
+      {#each scales as { name, value }}
+        <button
+          class:active={viewportScale.value === value}
+          onclick={setScale(value)}
+        >
+          {name}
+        </button>
+      {/each}
+    </div>
   </div>
 </div>
 

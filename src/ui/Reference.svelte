@@ -30,6 +30,13 @@
     </ul>
   </div>
   <div>
+    <h5>Noise</h5>
+    <ul>
+      <li>float perlin(vec3 p)</li>
+      <li>float simplex(vec3 p)</li>
+    </ul>
+  </div>
+  <div>
     <h5>Helpers</h5>
     <ul>
       <li>mat3 rotateX(float angle)</li>

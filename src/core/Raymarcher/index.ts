@@ -9,12 +9,16 @@ import {
   type Texture,
   Vector2,
   Vector3,
+  ShaderChunk,
   WebGLRenderer,
 } from 'three';
 import { type Background } from 'core/Background';
 import { type Errors } from 'core/Scene.svelte';
+import noise from './noise.glsl';
 import raymarcherFragment from './raymarcher.frag';
 import raymarcherVertex from './raymarcher.vert';
+
+(ShaderChunk as any).noise = noise;
 
 export class Raymarcher {
   private animate?: (camera: PerspectiveCamera, spherical: Spherical, time: number) => void;

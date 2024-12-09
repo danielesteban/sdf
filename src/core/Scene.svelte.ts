@@ -4,7 +4,7 @@ import * as Environments from 'textures/Environments';
 
 const defaultScene = {
   CPUCode: /* js */`spherical.phi = Math.PI * 0.5;
-spherical.theta = Math.sin(time) * Math.PI * 0.5;
+spherical.theta = Math.PI * 0.5 + Math.sin(time) * Math.PI * 0.5;
 spherical.radius = 10;
 camera.position.setFromSpherical(spherical);
 camera.lookAt(0, 0, 0);
@@ -26,7 +26,11 @@ camera.lookAt(0, 0, 0);
     0.1
   );
   o = q - vec3(0.0, sin(time) * 2.5 * (p.x > 0.0 ? 1.0 : -1.0), 0.0);
-  d = sin(o.y * 10.0) * sin(time) * 0.05;
+  d = (
+    sin(o.y * 10.0) * sin(time) * 0.05
+  ) + (
+    simplex(o + time) * 0.1
+  );
   scene = opSmoothUnion(
     scene,
     SDF(
@@ -42,7 +46,7 @@ camera.lookAt(0, 0, 0);
 `,
   animationDuration: Math.PI * 4,
   backgroundColor: '#FFDBAC',
-  environment: 'Sunset',
+  environment: 'Warehouse',
   environmentIntensity: 0.5,
   viewportSize: { width: 1080, height: 1080 },
 };
@@ -113,11 +117,15 @@ export const videoRenderingProgress = $state<{ value: { stage: 'encode' | 'rende
   value: { stage: 'render', progress: 0 },
 });
 
+export const viewportScale = $state({
+  value: 0.5,
+});
+
 export const viewportSize = $state({
   value: defaultScene.viewportSize,
 });
 
-const serialize = () => JSON.stringify({
+const serializeScene = () => JSON.stringify({
   version: 1,
   CPUCode: CPU.code.value,
   GPUCode: GPU.code.value,
@@ -128,7 +136,7 @@ const serialize = () => JSON.stringify({
   viewportSize: viewportSize.value,
 });
 
-const deserialize = (json: string) => {
+const deserializeScene = (json: string) => {
   let data;
   try {
     data = JSON.parse(json);
@@ -150,9 +158,24 @@ const deserialize = (json: string) => {
   viewportSize.value = data.viewportSize;
 };
 
+const serializeSettings = () => JSON.stringify({
+  version: 1,
+  viewportScale: viewportScale.value,
+});
+
+const deserializeSettings = (json: string) => {
+  let data;
+  try {
+    data = JSON.parse(json);
+  } catch (e) {
+    return;
+  }
+  viewportScale.value = data.viewportScale;
+};
+
 const loadFile = (file: Blob) => {
   const reader = new FileReader();
-  reader.addEventListener('load', () => deserialize(reader.result as string));
+  reader.addEventListener('load', () => deserializeScene(reader.result as string));
   reader.readAsText(file);
 };
 
@@ -169,18 +192,23 @@ export const load = () => {
 
 export const save = () => {
   const downloader = document.createElement('a');
-  downloader.href = URL.createObjectURL(new Blob([serialize()], { type: 'application/json' }));
+  downloader.href = URL.createObjectURL(new Blob([serializeScene()], { type: 'application/json' }));
   downloader.download = 'scene.json';
   downloader.click();
 };
 
 export const reset = () => {
-  confirm('Are you sure?') && deserialize(JSON.stringify(defaultScene));
+  confirm('Are you sure?') && deserializeScene(JSON.stringify(defaultScene));
 };
 
-const stored = localStorage.getItem('sdf:scene');
-if (stored) {
-  deserialize(stored);
+const storedScene = localStorage.getItem('sdf:scene');
+if (storedScene) {
+  deserializeScene(storedScene);
+}
+
+const storedSettings = localStorage.getItem('sdf:settings');
+if (storedSettings) {
+  deserializeSettings(storedSettings);
 }
 
 window.addEventListener('beforeunload', (e) => {
@@ -188,7 +216,8 @@ window.addEventListener('beforeunload', (e) => {
     e.preventDefault();
     return;
   }
-  localStorage.setItem('sdf:scene', serialize());
+  localStorage.setItem('sdf:scene', serializeScene());
+  localStorage.setItem('sdf:settings', serializeSettings());
 });
 
 document.addEventListener('dragenter', (e) => e.preventDefault());

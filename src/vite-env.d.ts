@@ -6,6 +6,11 @@ declare module '*.frag' {
   export default text;
 }
 
+declare module '*.glsl' {
+  const text: string;
+  export default text;
+}
+
 declare module '*.vert' {
   const text: string;
   export default text;

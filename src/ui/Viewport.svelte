@@ -22,6 +22,7 @@
     isRenderingVideo,
     videoRenderingController,
     videoRenderingProgress,
+    viewportScale,
     viewportSize,
   } from 'core/Scene.svelte';
   import { encodeVideo } from 'core/Video';
@@ -31,6 +32,8 @@
   const renderer = new WebGLRenderer();
   renderer.autoClear = false;
   renderer.domElement.style.maxWidth = renderer.domElement.style.maxHeight = '100%';
+  renderer.domElement.style.minWidth = renderer.domElement.style.minHeight = '100%';
+  renderer.domElement.style.objectFit = 'contain';
   renderer.sortObjects = false;
 
   let viewport: HTMLDivElement;
@@ -46,9 +49,9 @@
   $effect(() => {
     const { width, height } = viewportSize.value;
     const aspect = width / height;
+    const scale = isRenderingVideo.value ? 1.0 : viewportScale.value;
     background.setSize(width, height);
-    renderer.setSize(width, height, false);
-    renderer.domElement.style.aspectRatio = String(width / height);
+    renderer.setSize(width * scale, height * scale, false);
     camera.aspect = aspect;
     camera.updateProjectionMatrix();
   });

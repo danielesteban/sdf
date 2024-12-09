@@ -10,7 +10,6 @@
     load,
     save,
     reset,
-    store,
   } from 'ui/State.svelte';
 
   const { width }: { width: number } = $props();
@@ -35,17 +34,7 @@
       isRenderingVideo.value = true;
     }
   };
-
-  const onbeforeunload = (e: Event) => {
-    if (CPU.hasModified.value || GPU.hasModified.value) {
-      e.preventDefault();
-      return;
-    }
-    store();
-  };
 </script>
-
-<svelte:window {onbeforeunload} />
 
 <div class="editor" style="width: {width}px">
   <div class="tabs">

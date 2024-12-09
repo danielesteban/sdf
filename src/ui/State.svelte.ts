@@ -178,14 +178,18 @@ export const reset = () => {
   confirm('Are you sure?') && deserialize(JSON.stringify(defaultScene));
 };
 
-export const store = () => {
-  localStorage.setItem('sdf:scene', serialize());
-};
-
 const stored = localStorage.getItem('sdf:scene');
 if (stored) {
   deserialize(stored);
 }
+
+window.addEventListener('beforeunload', (e) => {
+  if (CPU.hasModified.value || GPU.hasModified.value) {
+    e.preventDefault();
+    return;
+  }
+  localStorage.setItem('sdf:scene', serialize());
+});
 
 document.addEventListener('dragenter', (e) => e.preventDefault());
 document.addEventListener('dragover', (e) => e.preventDefault());

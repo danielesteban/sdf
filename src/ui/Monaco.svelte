@@ -99,7 +99,6 @@
   let editorElement: HTMLDivElement;
 
   export const resize = () => editor.layout();
-  export const update = () => editor.setValue(file.code.value);
 
   // @dani @hack
   // This flags are retared.

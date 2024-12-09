@@ -40,6 +40,9 @@
     'perlin', 'simplex',
     'rotateX', 'rotateY', 'rotateZ',
   ];
+  const variables = [
+    'duration', 'time',
+  ];
   monaco.languages.setMonarchTokensProvider('glsl', {
     defaultToken: '',
     tokenPostfix: '.glsl',
@@ -112,11 +115,11 @@
         kind: monaco.languages.CompletionItemKind.Keyword,
         insertText: keyword
     })),
-    {
-      label: 'time',
-      kind: monaco.languages.CompletionItemKind.Variable,
-      insertText: 'time',
-    },
+    ...variables.map(keyword => ({
+        label: keyword,
+        kind: monaco.languages.CompletionItemKind.Variable,
+        insertText: keyword
+    })),
   ];
   monaco.languages.registerCompletionItemProvider('glsl', {
     provideCompletionItems: (model, position) => {

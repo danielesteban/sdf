@@ -4,6 +4,7 @@
 #include <cube_uv_reflection_fragment>
 #include <colorspace_pars_fragment>
 #include <lights_physical_pars_fragment>
+#include <hsl>
 #include <noise>
 
 uniform vec3 cameraDirection;

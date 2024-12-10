@@ -42,6 +42,7 @@
   <div>
     <h5>Helpers</h5>
     <ul>
+      <li>vec3 hsl(vec3 hsl)</li>
       <li>mat3 rotateX(float angle)</li>
       <li>mat3 rotateY(float angle)</li>
       <li>mat3 rotateZ(float angle)</li>

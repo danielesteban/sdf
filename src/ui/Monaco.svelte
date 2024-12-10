@@ -39,7 +39,7 @@
     'opUnion', 'opSubtraction', 'opIntersection',
     'opSmoothUnion', 'opSmoothSubtraction', 'opSmoothIntersection',
     'perlin', 'simplex',
-    'rotateX', 'rotateY', 'rotateZ',
+    'hsl', 'rotateX', 'rotateY', 'rotateZ',
   ];
   const variables = [
     'duration', 'time',

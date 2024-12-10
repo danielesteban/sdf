@@ -13,11 +13,13 @@ import {
   WebGLRenderer,
 } from 'three';
 import { type Background } from 'core/Background';
+import hsl from 'core/raymarcher/hsl.glsl';
+import noise from 'core/raymarcher/noise.glsl';
+import raymarcherFragment from 'core/raymarcher/raymarcher.frag';
+import raymarcherVertex from 'core/raymarcher/raymarcher.vert';
 import { type Errors } from 'core/Scene.svelte';
-import noise from './noise.glsl';
-import raymarcherFragment from './raymarcher.frag';
-import raymarcherVertex from './raymarcher.vert';
 
+(ShaderChunk as any).hsl = hsl;
 (ShaderChunk as any).noise = noise;
 
 export class Raymarcher {
@@ -47,7 +49,7 @@ export class Raymarcher {
     this.renderer = renderer;
     this.onCPUErrors = onCPUErrors;
     this.onGPUErrors = onGPUErrors;
-  
+
     const mesh = new Mesh(new PlaneGeometry(2, 2, 1, 1), null!);
     mesh.matrixAutoUpdate = false;
     mesh.frustumCulled = false;

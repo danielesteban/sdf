@@ -51,8 +51,8 @@
   <div>
     <h5>Uniforms</h5>
     <ul>
-      <li>uniform float duration</li>
-      <li>uniform float time</li>
+      <li>float duration</li>
+      <li>float time</li>
     </ul>
   </div>
   <div>

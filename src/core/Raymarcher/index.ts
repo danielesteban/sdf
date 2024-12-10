@@ -21,7 +21,7 @@ import raymarcherVertex from './raymarcher.vert';
 (ShaderChunk as any).noise = noise;
 
 export class Raymarcher {
-  private animate?: (camera: PerspectiveCamera, spherical: Spherical, time: number) => void;
+  private animate?: (camera: PerspectiveCamera, duration: number, spherical: Spherical, time: number) => void;
   private readonly onCPUErrors: (errors: Errors) => void;
   private readonly onGPUErrors: (errors: Errors) => void;
   private readonly status = {
@@ -58,7 +58,7 @@ export class Raymarcher {
   private static readonly spherical = new Spherical();
 
   render(time: number) {
-    const { animate, background, camera, mesh, renderer, status } = this;
+    const { animate, background, camera, duration, mesh, renderer, status } = this;
     const { spherical } = Raymarcher;
     if (!mesh.material) {
       return;
@@ -68,7 +68,7 @@ export class Raymarcher {
       return;
     }
     try {
-      animate?.(camera, spherical, time);
+      animate?.(camera, duration.value, spherical, time);
     } catch (e) {
       status.cpu.hasErrors = true;
       if (e instanceof Error) {
@@ -170,7 +170,7 @@ export class Raymarcher {
     const { status } = this;
     const { globals } = Raymarcher;
     try {
-      this.animate = (new Function('camera', 'spherical', 'time', ...globals, code) as typeof this.animate);
+      this.animate = (new Function('camera', 'duration', 'spherical', 'time', ...globals, code) as typeof this.animate);
     } catch (e) {
       status.cpu.hasErrors = true;
       if (e instanceof Error) {

@@ -70,7 +70,7 @@
     <h5>Articles</h5>
     <ul>
       <li><a href="https://iquilezles.org/articles/raymarchingdf/" target="_blank" rel="noopener noreferrer">Raymarching Distance Fields</a></li>
-      <li><a href="https://iquilezles.org/articles/distfunctions/" target="_blank" rel="noopener noreferrer">Distance functions</a></li>
+      <li><a href="https://iquilezles.org/articles/distfunctions/" target="_blank" rel="noopener noreferrer">Distance Functions</a></li>
       <li><a href="https://iquilezles.org/articles/sdfrepetition/" target="_blank" rel="noopener noreferrer">Domain Repetition</a></li>
     </ul>
   </div>

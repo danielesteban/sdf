@@ -2,7 +2,7 @@
   import Function from 'ui/components/Function.svelte';
 </script>
 
-<div class="doc">
+<div class="reference">
   <div>
     <h5>Types</h5>
     <ul>
@@ -64,11 +64,11 @@
       You can override this defaults by defining them at the top of the GPU code
     </p>
     <ul>
-      <li><span class="type">#define</span> MAX_DISTANCE <span class="default">(default: cameraFar)</span></li>
-      <li><span class="type">#define</span> MAX_ITERATIONS <span class="default">(default: 100)</span></li>
-      <li><span class="type">#define</span> MIN_COVERAGE <span class="default">(default: 0.02)</span></li>
-      <li><span class="type">#define</span> MIN_STEP <span class="default">(default: 0.01)</span></li>
-      <li><span class="type">#define</span> NORMAL_OFFSET <span class="default">(default: 0.001)</span></li>
+      <li><span class="type">#define</span> MAX_DISTANCE <span class="default">cameraFar</span></li>
+      <li><span class="type">#define</span> MAX_ITERATIONS <span class="default">100</span></li>
+      <li><span class="type">#define</span> MIN_COVERAGE <span class="default">0.02</span></li>
+      <li><span class="type">#define</span> MIN_STEP <span class="default">0.01</span></li>
+      <li><span class="type">#define</span> NORMAL_OFFSET <span class="default">0.001</span></li>
     </ul>
   </div>
   <div>
@@ -91,7 +91,7 @@
 </div>
 
 <style>
-  .doc {
+  .reference {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -99,10 +99,12 @@
     padding: 1rem;
     overflow-y: auto;
   }
-  .doc > div > ul {
+  .reference > div > ul {
     padding: 0 1.25rem;
     font-size: 1rem;
     line-height: 1.5rem;
+    cursor: auto;
+    user-select: text;
   }
   .default {
     color: #999;

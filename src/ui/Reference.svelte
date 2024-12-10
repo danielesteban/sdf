@@ -19,6 +19,7 @@
       <li><Function type="float" name="sdRoundedCylinder" params={[['vec3', 'p'], ['float', 'ra'], ['float', 'rb'], ['float', 'h']]} /></li>
       <li><Function type="float" name="sdEllipsoid" params={[['vec3', 'p'], ['vec3', 'r']]} /></li>
       <li><Function type="float" name="sdOctahedron" params={[['vec3', 'p'], ['float', 'r']]} /></li>
+      <li><Function type="float" name="sdPyramid" params={[['vec3', 'p'], ['float', 'h']]} /></li>
       <li><Function type="float" name="sdSphere" params={[['vec3', 'p'], ['float', 'r']]} /></li>
       <li><Function type="float" name="sdTorus" params={[['vec3', 'p'], ['vec2', 'r']]} /></li>
     </ul>

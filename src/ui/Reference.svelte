@@ -58,6 +58,15 @@
     </ul>
   </div>
   <div>
+    <h5>CPU Globals</h5>
+    <ul>
+      <li><span class="type">PerspectiveCamera</span> camera</li>
+      <li><span class="type">float</span> duration</li>
+      <li><span class="type">Spherical</span> spherical</li>
+      <li><span class="type">float</span> time</li>
+    </ul>
+  </div>
+  <div>
     <h5>Articles</h5>
     <ul>
       <li><a href="https://iquilezles.org/articles/raymarchingdf/" target="_blank" rel="noopener noreferrer">Raymarching Distance Fields</a></li>

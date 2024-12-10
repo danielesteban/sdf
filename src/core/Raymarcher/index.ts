@@ -13,10 +13,10 @@ import {
   WebGLRenderer,
 } from 'three';
 import { type Background } from 'core/Background';
-import hsl from 'core/raymarcher/hsl.glsl';
-import noise from 'core/raymarcher/noise.glsl';
-import raymarcherFragment from 'core/raymarcher/raymarcher.frag';
-import raymarcherVertex from 'core/raymarcher/raymarcher.vert';
+import hsl from 'core/Raymarcher/hsl.glsl';
+import noise from 'core/Raymarcher/noise.glsl';
+import raymarcherFragment from 'core/Raymarcher/raymarcher.frag';
+import raymarcherVertex from 'core/Raymarcher/raymarcher.vert';
 import { type Errors } from 'core/Scene.svelte';
 
 (ShaderChunk as any).hsl = hsl;

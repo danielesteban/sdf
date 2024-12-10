@@ -84,6 +84,27 @@ float sdTorus(const in vec3 p, const in vec2 r) {
   return length(q)-r.y;
 }
 
+SDF opUnion(const in SDF a, const in SDF b) {
+  if (a.distance < b.distance) {
+    return a;
+  }
+  return b;
+}
+
+SDF opSubtraction(const in SDF a, const in SDF b) {
+  if (a.distance > -b.distance) {
+    return a;
+  }
+  return SDF(-b.distance, b.color, b.metalness, b.roughness);
+}
+
+SDF opIntersection(const in SDF a, const in SDF b) {
+  if (a.distance > b.distance) {
+    return a;
+  }
+  return b;
+}
+
 SDF opSmoothUnion(const in SDF a, const in SDF b, const in float k) {
   float h = saturate(0.5 + 0.5 * (b.distance - a.distance) / k);
   return SDF(

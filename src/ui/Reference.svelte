@@ -24,6 +24,9 @@
   <div>
     <h5>Operations</h5>
     <ul>
+      <li>SDF opUnion(SDF a, SDF b)</li>
+      <li>SDF opSubtraction(SDF a, SDF b)</li>
+      <li>SDF opIntersection(SDF a, SDF b)</li>
       <li>SDF opSmoothUnion(SDF a, SDF b, float k)</li>
       <li>SDF opSmoothSubtraction(SDF a, SDF b, float k)</li>
       <li>SDF opSmoothIntersection(SDF a, SDF b, float k)</li>

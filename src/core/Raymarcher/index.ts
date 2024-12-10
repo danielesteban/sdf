@@ -202,11 +202,6 @@ export class Raymarcher {
         CUBEUV_TEXEL_WIDTH: `${texelWidth}`,
         CUBEUV_TEXEL_HEIGHT: `${texelHeight}`,
         ENVMAP_TYPE_CUBE_UV: true,
-        MAX_DISTANCE: '1000.0',
-        MAX_ITERATIONS: '1000',
-        MIN_COVERAGE: '0.02',
-        MIN_DISTANCE: '0.01',
-        NORMAL_OFFSET: '0.05',
       },
       uniforms: {
         cameraDirection: { value: new Vector3() },

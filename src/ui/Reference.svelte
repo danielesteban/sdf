@@ -59,6 +59,19 @@
     </ul>
   </div>
   <div>
+    <h5>Defines</h5>
+    <p>
+      You can override this defaults by defining them at the top of the GPU code
+    </p>
+    <ul>
+      <li><span class="type">#define</span> MAX_DISTANCE <span class="default">(default: cameraFar)</span></li>
+      <li><span class="type">#define</span> MAX_ITERATIONS <span class="default">(default: 100)</span></li>
+      <li><span class="type">#define</span> MIN_COVERAGE <span class="default">(default: 0.02)</span></li>
+      <li><span class="type">#define</span> MIN_STEP <span class="default">(default: 0.01)</span></li>
+      <li><span class="type">#define</span> NORMAL_OFFSET <span class="default">(default: 0.001)</span></li>
+    </ul>
+  </div>
+  <div>
     <h5>CPU Globals</h5>
     <ul>
       <li><span class="type">PerspectiveCamera</span> camera</li>
@@ -90,6 +103,9 @@
     padding: 0 1.25rem;
     font-size: 1rem;
     line-height: 1.5rem;
+  }
+  .default {
+    color: #999;
   }
   .type {
     color: #569cd6;

@@ -184,6 +184,22 @@ mat3 rotateZ(const in float angle) {
 
 SDF map(const in vec3 p);
 
+#ifndef MAX_DISTANCE
+#define MAX_DISTANCE cameraFar
+#endif
+#ifndef MAX_ITERATIONS
+#define MAX_ITERATIONS 100
+#endif
+#ifndef MIN_COVERAGE
+#define MIN_COVERAGE 0.02
+#endif
+#ifndef MIN_STEP
+#define MIN_STEP 0.01
+#endif
+#ifndef NORMAL_OFFSET
+#define NORMAL_OFFSET 0.001
+#endif
+
 vec3 getNormal(const in vec3 p) {
   vec3 n = vec3(0.0);
   for(int i = ZERO; i < 4; i++) {
@@ -246,7 +262,7 @@ void march(inout vec4 color, inout float distance) {
         break;
       }
     }
-    distance += max(abs(step.distance), MIN_DISTANCE);
+    distance += max(abs(step.distance), MIN_STEP);
   }
   distance = closest;
   color.a = 1.0 - (max(coverage - MIN_COVERAGE, 0.0) / (1.0 - MIN_COVERAGE));
@@ -258,7 +274,8 @@ void main() {
   march(color, distance);
 
   outputColor = saturate(sRGBTransferOETF(color));
-  float z = (distance >= MAX_DISTANCE) ? cameraFar : (distance * dot(cameraDirection, ray));
+
+  float z = distance * dot(cameraDirection, ray);
   float ndcDepth = -((cameraFar + cameraNear) / (cameraNear - cameraFar)) + ((2.0 * cameraFar * cameraNear) / (cameraNear - cameraFar)) / z;
   gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
 

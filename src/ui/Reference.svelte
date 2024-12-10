@@ -1,58 +1,60 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import Function from 'ui/components/Function.svelte';
+</script>
 
 <div class="doc">
   <div>
     <h5>Types</h5>
     <ul>
-      <li>SDF(float distance, vec3 color, float metalness, float roughness)</li>
+      <li><Function type="SDF" params={[['float', 'distance'], ['vec3', 'color'], ['float', 'metalness'], ['float', 'roughness']]} /></li>
     </ul>
   </div>
   <div>
     <h5>Primitives</h5>
     <ul>
-      <li>float sdBox(vec3 p, vec3 r)</li>
-      <li>float sdRoundedBox(vec3 p, vec3 r, float c)</li>
-      <li>float sdCapsule(vec3 p, vec3 r)</li>
-      <li>float sdCylinder(vec3 p, float h, float r)</li>
-      <li>float sdRoundedCylinder(vec3 p, float ra, float rb, float h)</li>
-      <li>float sdEllipsoid(vec3 p, vec3 r) </li>
-      <li>float sdOctahedron(vec3 p, float r)</li>
-      <li>float sdSphere(vec3 p, float r)</li>
-      <li>float sdTorus(vec3 p, vec2 r) </li>
+      <li><Function type="float" name="sdBox" params={[['vec3', 'p'], ['vec3', 'r']]} /></li>
+      <li><Function type="float" name="sdRoundedBox" params={[['vec3', 'p'], ['vec3', 'r'], ['float', 'c']]} /></li>
+      <li><Function type="float" name="sdCapsule" params={[['vec3', 'p'], ['vec3', 'r']]} /></li>
+      <li><Function type="float" name="sdCylinder" params={[['vec3', 'p'], ['float', 'h'], ['float', 'r']]} /></li>
+      <li><Function type="float" name="sdRoundedCylinder" params={[['vec3', 'p'], ['float', 'ra'], ['float', 'rb'], ['float', 'h']]} /></li>
+      <li><Function type="float" name="sdEllipsoid" params={[['vec3', 'p'], ['vec3', 'r']]} /></li>
+      <li><Function type="float" name="sdOctahedron" params={[['vec3', 'p'], ['float', 'r']]} /></li>
+      <li><Function type="float" name="sdSphere" params={[['vec3', 'p'], ['float', 'r']]} /></li>
+      <li><Function type="float" name="sdTorus" params={[['vec3', 'p'], ['vec2', 'r']]} /></li>
     </ul>
   </div>
   <div>
     <h5>Operations</h5>
     <ul>
-      <li>SDF opUnion(SDF a, SDF b)</li>
-      <li>SDF opSubtraction(SDF a, SDF b)</li>
-      <li>SDF opIntersection(SDF a, SDF b)</li>
-      <li>SDF opSmoothUnion(SDF a, SDF b, float k)</li>
-      <li>SDF opSmoothSubtraction(SDF a, SDF b, float k)</li>
-      <li>SDF opSmoothIntersection(SDF a, SDF b, float k)</li>
+      <li><Function type="SDF" name="opUnion" params={[['SDF', 'a'], ['SDF', 'b']]} /></li>
+      <li><Function type="SDF" name="opSubtraction" params={[['SDF', 'a'], ['SDF', 'b']]} /></li>
+      <li><Function type="SDF" name="opIntersection" params={[['SDF', 'a'], ['SDF', 'b']]} /></li>
+      <li><Function type="SDF" name="opSmoothUnion" params={[['SDF', 'a'], ['SDF', 'b'], ['float', 'k']]} /></li>
+      <li><Function type="SDF" name="opSmoothSubtraction" params={[['SDF', 'a'], ['SDF', 'b'], ['float', 'k']]} /></li>
+      <li><Function type="SDF" name="opSmoothIntersection" params={[['SDF', 'a'], ['SDF', 'b'], ['float', 'k']]} /></li>
     </ul>
   </div>
   <div>
     <h5>Noise</h5>
     <ul>
-      <li>float perlin(vec3 p)</li>
-      <li>float simplex(vec3 p)</li>
+      <li><Function type="float" name="perlin" params={[['vec3', 'p']]} /></li>
+      <li><Function type="float" name="simplex" params={[['vec3', 'p']]} /></li>
     </ul>
   </div>
   <div>
     <h5>Helpers</h5>
     <ul>
-      <li>vec3 hsl(vec3 hsl)</li>
-      <li>mat3 rotateX(float angle)</li>
-      <li>mat3 rotateY(float angle)</li>
-      <li>mat3 rotateZ(float angle)</li>
+      <li><Function type="vec3" name="hsl" params={[['vec3', 'hsl']]} /></li>
+      <li><Function type="mat3" name="rotateX" params={[['float', 'angle']]} /></li>
+      <li><Function type="mat3" name="rotateY" params={[['float', 'angle']]} /></li>
+      <li><Function type="mat3" name="rotateZ" params={[['float', 'angle']]} /></li>
     </ul>
   </div>
   <div>
     <h5>Uniforms</h5>
     <ul>
-      <li>float duration</li>
-      <li>float time</li>
+      <li><span class="type">float</span> duration</li>
+      <li><span class="type">float</span> time</li>
     </ul>
   </div>
   <div>
@@ -78,5 +80,8 @@
     padding: 0 1.25rem;
     font-size: 1rem;
     line-height: 1.5rem;
+  }
+  .type {
+    color: #569cd6;
   }
 </style>

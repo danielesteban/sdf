@@ -1,9 +1,9 @@
 float _hue2rgb(const in float p, const in float q, in float t) {
-	if (t < 0.0) t += 1.0;
-	if (t > 1.0) t -= 1.0;
-	if (t < 1.0 / 6.0) return p + (q - p) * 6.0 * t;
-	if (t < 1.0 / 2.0) return q;
-	if (t < 2.0 / 3.0) return p + (q - p) * 6.0 * (2.0 / 3.0 - t);
+  if (t < 0.0) t += 1.0;
+  if (t > 1.0) t -= 1.0;
+  if (t < 1.0 / 6.0) return p + (q - p) * 6.0 * t;
+  if (t < 1.0 / 2.0) return q;
+  if (t < 2.0 / 3.0) return p + (q - p) * 6.0 * (2.0 / 3.0 - t);
   return p;
 }
 

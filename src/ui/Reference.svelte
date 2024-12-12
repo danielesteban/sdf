@@ -72,6 +72,21 @@
     </ul>
   </div>
   <div>
+    <h5>Output</h5>
+    <p>
+      You can also override the default output function
+    </p>
+    <pre><code>{[
+      '#define GET_OUTPUT getOutputWithFog',
+      'vec3 getOutputWithFog(vec4 color, float viewZ) {',
+      '  vec3 fogColor = vec3(0.0, 0.0, 0.005);',
+      '  float fogDensity = 0.25;',
+      '  float fogFactor = 1.0 - exp(-fogDensity * fogDensity * viewZ * viewZ);',
+      '  return mix(color.rgb * color.a, fogColor, fogFactor);',
+      '}',
+    ].join('\n')}</code></pre>
+  </div>
+  <div>
     <h5>CPU Globals</h5>
     <ul>
       <li><span class="type">PerspectiveCamera</span> camera</li>
@@ -103,6 +118,10 @@
     padding: 0 1.25rem;
     font-size: 1rem;
     line-height: 1.5rem;
+    cursor: auto;
+    user-select: text;
+  }
+  .reference > div > pre > code {
     cursor: auto;
     user-select: text;
   }

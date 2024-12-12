@@ -7,6 +7,8 @@
 #include <hsl>
 #include <noise>
 
+uniform vec3 backgroundColor;
+uniform sampler2D backgroundNoise;
 uniform vec3 cameraDirection;
 uniform float cameraFar;
 uniform float cameraFov;
@@ -19,7 +21,8 @@ uniform int frame;
 uniform vec2 resolution;
 uniform float time;
 
-in vec3 ray;
+in vec3 vRay;
+in vec2 vUV;
 
 out vec4 outputColor;
 
@@ -182,8 +185,23 @@ mat3 rotateZ(const in float angle) {
   );
 }
 
+vec3 getBackground() {
+  vec3 granularity = backgroundColor * 0.02;
+  return (
+    mix(backgroundColor, backgroundColor / 3.0, length(vUV - 0.5) * 1.5)
+    + mix(-granularity, granularity, texture(backgroundNoise, vUV * (resolution / vec2(256.0))).r)
+  );
+}
+
+vec3 getOutput(const in vec4 color, const in float viewZ) {
+  return color.rgb * color.a + getBackground() * (1.0 - color.a);
+}
+
 SDF map(const in vec3 p);
 
+#ifndef GET_OUTPUT
+#define GET_OUTPUT getOutput
+#endif
 #ifndef MAX_DISTANCE
 #define MAX_DISTANCE cameraFar
 #endif
@@ -246,41 +264,34 @@ void march(inout vec4 color, inout float distance) {
   float closest = MAX_DISTANCE;
   float coverage = 1.0;
   float coneRadius = (2.0 * tan(cameraFov / 2.0)) / resolution.y;
-  for (int i = 0; i < MAX_ITERATIONS && distance < MAX_DISTANCE; i++) {
-    vec3 position = cameraPosition + ray * distance;
+  float t = cameraNear;
+  for (int i = 0; i < MAX_ITERATIONS && t < MAX_DISTANCE; i++) {
+    float cone = coneRadius * t;
+    vec3 position = cameraPosition + vRay * t;
     SDF step = map(position);
-    float cone = coneRadius * distance;
     if (step.distance < cone) {
-      if (closest > distance) {
-        closest = distance;
-      }
-      float alpha = smoothstep(cone, -cone, step.distance);
       vec3 pixel = getLight(position, getNormal(position), step.color, step.metalness, step.roughness);
+      float alpha = smoothstep(cone, -cone, step.distance);
       color.rgb += coverage * (alpha * pixel);
       coverage *= (1.0 - alpha);
+      if (step.distance < closest) {
+        closest = step.distance;
+        distance = t + step.distance;
+      }
       if (coverage <= MIN_COVERAGE) {
         break;
       }
     }
-    distance += max(abs(step.distance), MIN_STEP);
+    t += max(abs(step.distance), MIN_STEP);
   }
-  distance = closest;
   color.a = 1.0 - (max(coverage - MIN_COVERAGE, 0.0) / (1.0 - MIN_COVERAGE));
 }
 
 void main() {
   vec4 color;
-  float distance = cameraNear;
+  float distance = MAX_DISTANCE;
   march(color, distance);
 
-  outputColor = saturate(sRGBTransferOETF(color));
-
-  float z = distance * dot(cameraDirection, ray);
-  float ndcDepth = -((cameraFar + cameraNear) / (cameraNear - cameraFar)) + ((2.0 * cameraFar * cameraNear) / (cameraNear - cameraFar)) / z;
-  gl_FragDepth = ((gl_DepthRange.diff * ndcDepth) + gl_DepthRange.near + gl_DepthRange.far) / 2.0;
-
-  #ifdef fog
-    float fogFactor = 1.0 - exp(-fogDensity * fogDensity * z * z);
-    outputColor = mix(outputColor, vec4(fogColor, 1.0), fogFactor);
-  #endif
+  float viewZ = distance * dot(cameraDirection, vRay);
+  outputColor = saturate(sRGBTransferOETF(vec4(GET_OUTPUT(color, viewZ), 1.0)));
 }

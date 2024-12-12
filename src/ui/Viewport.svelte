@@ -9,7 +9,6 @@
     WebGLRenderer,
   } from 'three';
   import { UltraHDRLoader } from 'three/examples/jsm/loaders/UltraHDRLoader.js';
-  import { Background } from 'core/Background';
   import { Raymarcher } from 'core/Raymarcher';
   import {
     CPU,
@@ -29,28 +28,20 @@
   import * as Environments from 'textures/Environments';
 
   const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
-  const renderer = new WebGLRenderer();
-  renderer.autoClear = false;
+  const renderer = new WebGLRenderer({ depth: false });
   renderer.domElement.style.maxWidth = renderer.domElement.style.maxHeight = '100%';
   renderer.domElement.style.minWidth = renderer.domElement.style.minHeight = '100%';
   renderer.domElement.style.objectFit = 'contain';
-  renderer.sortObjects = false;
 
   let viewport: HTMLDivElement;
   $effect(() => {
     viewport.appendChild(renderer.domElement);
   });
 
-  const background = new Background(renderer.capabilities.precision);
-  $effect(() => {
-    background.setColor(backgroundColor.value);
-  });
-
   $effect(() => {
     const { width, height } = viewportSize.value;
     const aspect = width / height;
     const scale = isRenderingVideo.value ? 1.0 : viewportScale.value;
-    background.setSize(width, height);
     renderer.setSize(width * scale, height * scale, false);
     camera.aspect = aspect;
     camera.updateProjectionMatrix();
@@ -68,7 +59,6 @@
   });
 
   const raymarcher = new Raymarcher(
-    background,
     camera,
     renderer,
     (errors) => {
@@ -78,6 +68,10 @@
       GPU.errors.value = errors;
     },
   );
+
+  $effect(() => {
+    raymarcher.setBackgroundColor(backgroundColor.value);
+  });
 
   $effect(() => {
     raymarcher.setDuration(animationDuration.value);

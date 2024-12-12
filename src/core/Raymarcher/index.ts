@@ -1,18 +1,23 @@
 import {
+  Color,
+  type ColorRepresentation,
+  DataTexture,
+  FloatType,
   GLSL3,
   MathUtils,
   Mesh,
   type PerspectiveCamera,
   PlaneGeometry,
   RawShaderMaterial,
+  RedFormat,
   Spherical,
   type Texture,
   Vector2,
   Vector3,
+  RepeatWrapping,
   ShaderChunk,
   WebGLRenderer,
 } from 'three';
-import { type Background } from 'core/Background';
 import hsl from 'core/Raymarcher/hsl.glsl';
 import noise from 'core/Raymarcher/noise.glsl';
 import raymarcherFragment from 'core/Raymarcher/raymarcher.frag';
@@ -30,7 +35,18 @@ export class Raymarcher {
     cpu: { hasErrors: false },
     gpu: { hasCompiled: false, hasErrors: false },
   };
-  private readonly background: Background;
+  private readonly backgroundColor = { value: new Color(0) };
+  private readonly backgroundNoise = (() => {
+    const size = 256;
+    const data = new Float32Array(size * size);
+    for (let i = 0; i < size * size; i++) {
+      data[i] = Math.random();
+    }
+    const texture = new DataTexture(data, size, size, RedFormat, FloatType);
+    texture.wrapS = texture.wrapT = RepeatWrapping;
+    texture.needsUpdate = true;
+    return { value: texture };
+  })();
   private readonly camera: PerspectiveCamera;
   private readonly duration = { value: 0 };
   private readonly envMapIntensity = { value: 0.5 };
@@ -38,13 +54,11 @@ export class Raymarcher {
   private readonly renderer: WebGLRenderer;
 
   constructor(
-    background: Background,
     camera: PerspectiveCamera,
     renderer: WebGLRenderer,
     onCPUErrors: (errors: Errors) => void,
     onGPUErrors: (errors: Errors) => void
   ) {
-    this.background = background;
     this.camera = camera;
     this.renderer = renderer;
     this.onCPUErrors = onCPUErrors;
@@ -60,7 +74,7 @@ export class Raymarcher {
   private static readonly spherical = new Spherical();
 
   render(time: number) {
-    const { animate, background, camera, duration, mesh, renderer, status } = this;
+    const { animate, camera, duration, mesh, renderer, status } = this;
     const { spherical } = Raymarcher;
     if (!mesh.material) {
       return;
@@ -99,8 +113,6 @@ export class Raymarcher {
     uniforms.cameraNear.value = camera.near;
     renderer.getDrawingBufferSize(uniforms.resolution.value);
     uniforms.time.value = time;
-    renderer.clear();
-    background.render(renderer);
     renderer.render(mesh, camera);
     if (!status.gpu.hasCompiled) {
       status.gpu.hasCompiled = true;
@@ -147,6 +159,11 @@ export class Raymarcher {
     }
   }
 
+  setBackgroundColor(value: ColorRepresentation) {
+    const { backgroundColor } = this;
+    backgroundColor.value.set(value);
+  }
+
   setDuration(value: number) {
     const { duration } = this;
     duration.value = value;
@@ -188,15 +205,33 @@ export class Raymarcher {
   }
 
   setGPUCode(code: string, envMap: Texture) {
-    const { duration, envMapIntensity, mesh, renderer, status } = this;
+    const { backgroundColor, backgroundNoise, duration, envMapIntensity, mesh, renderer, status } = this;
     const maxMip = Math.log2(envMap.image.height) - 2;
     const texelWidth = 1.0 / (3 * Math.max(Math.pow(2, maxMip), 7 * 16));
     const texelHeight = 1.0 / envMap.image.height;
-    const precision = `precision ${renderer.capabilities.precision} float;\n`;
+    const { precision } = renderer.capabilities;
+    const precisionHeader = [
+      `precision ${precision} float;`,
+      `precision ${precision} int;`,
+      `precision ${precision} sampler2D;`,
+      `precision ${precision} samplerCube;`,
+      `precision ${precision} sampler3D;`,
+      `precision ${precision} sampler2DArray;`,
+      `precision ${precision} sampler2DShadow;`,
+      `precision ${precision} samplerCubeShadow;`,
+      `precision ${precision} sampler2DArrayShadow;`,
+      `precision ${precision} isampler2D;`,
+      `precision ${precision} isampler3D;`,
+      `precision ${precision} isamplerCube;`,
+      `precision ${precision} isampler2DArray;`,
+      `precision ${precision} usampler2D;`,
+      `precision ${precision} usampler3D;`,
+      `precision ${precision} usamplerCube;`,
+      `precision ${precision} usampler2DArray;`,
+    ].join('\n') + '\n';
     const material = new RawShaderMaterial({
       name: 'raymarcher',
       glslVersion: GLSL3,
-      transparent: true,
       defines: {
         CUBEUV_MAX_MIP: `${maxMip}.0`,
         CUBEUV_TEXEL_WIDTH: `${texelWidth}`,
@@ -204,6 +239,8 @@ export class Raymarcher {
         ENVMAP_TYPE_CUBE_UV: true,
       },
       uniforms: {
+        backgroundColor,
+        backgroundNoise,
         cameraDirection: { value: new Vector3() },
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
@@ -214,8 +251,8 @@ export class Raymarcher {
         resolution: { value: new Vector2() },
         time: { value: 0 },
       },
-      vertexShader: precision + raymarcherVertex,
-      fragmentShader: precision + raymarcherFragment.replace('SDF map(const in vec3 p);', '// __USER_CODE__\n' + code),
+      vertexShader: precisionHeader + raymarcherVertex,
+      fragmentShader: precisionHeader + raymarcherFragment.replace('SDF map(const in vec3 p);', '// __USER_CODE__\n' + code),
     });
     status.gpu.hasCompiled = false;
     status.gpu.hasErrors = false;

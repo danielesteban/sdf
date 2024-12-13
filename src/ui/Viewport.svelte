@@ -32,6 +32,7 @@
   renderer.domElement.style.maxWidth = renderer.domElement.style.maxHeight = '100%';
   renderer.domElement.style.minWidth = renderer.domElement.style.minHeight = '100%';
   renderer.domElement.style.objectFit = 'contain';
+  renderer.sortObjects = false;
 
   let viewport: HTMLDivElement;
   $effect(() => {

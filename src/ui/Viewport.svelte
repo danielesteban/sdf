@@ -1,6 +1,7 @@
 <script lang="ts">
   import { untrack } from 'svelte';
   import {
+    CubeReflectionMapping,
     EquirectangularReflectionMapping,
     HalfFloatType,
     PerspectiveCamera,
@@ -56,6 +57,7 @@
     envLoader.load(Environments[environment.value], (texture) => {
       texture.mapping = EquirectangularReflectionMapping;
       envMap = pmrem.fromEquirectangular(texture).texture;
+      envMap.mapping = CubeReflectionMapping;
     });
   });
 

@@ -206,9 +206,9 @@ export class Raymarcher {
 
   setGPUCode(code: string, envMap: Texture) {
     const { backgroundColor, backgroundNoise, duration, envMapIntensity, mesh, renderer, status } = this;
-    const maxMip = Math.log2(envMap.image.height) - 2;
+    const maxMip = Math.log2(envMap.height) - 2;
     const texelWidth = 1.0 / (3 * Math.max(Math.pow(2, maxMip), 7 * 16));
-    const texelHeight = 1.0 / envMap.image.height;
+    const texelHeight = 1.0 / envMap.height;
     const { precision } = renderer.capabilities;
     const precisionHeader = [
       `precision ${precision} float;`,
@@ -245,6 +245,7 @@ export class Raymarcher {
         cameraFar: { value: 0 },
         cameraFov: { value: 0 },
         cameraNear: { value: 0 },
+        dfgLUT: { value: null },
         duration,
         envMap: { value: envMap },
         envMapIntensity,

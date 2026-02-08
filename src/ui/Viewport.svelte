@@ -14,16 +14,8 @@
   import {
     CPU,
     GPU,
-    animationDuration,
-    backgroundColor,
-    environment,
-    environmentIntensity,
-    hasLoadedFFmpeg,
-    isRenderingVideo,
-    videoRenderingController,
-    videoRenderingProgress,
-    viewportScale,
-    viewportSize,
+    Settings,
+    Video,
   } from 'core/Scene.svelte';
   import { encodeVideo } from 'core/Video';
   import * as Environments from 'textures/Environments';
@@ -41,9 +33,9 @@
   });
 
   $effect(() => {
-    const { width, height } = viewportSize.value;
+    const { width, height } = Settings.viewportSize;
     const aspect = width / height;
-    const scale = isRenderingVideo.value ? 1.0 : viewportScale.value;
+    const scale = Video.isRendering ? 1.0 : Settings.viewportScale;
     renderer.setSize(width * scale, height * scale, false);
     camera.aspect = aspect;
     camera.updateProjectionMatrix();
@@ -54,7 +46,7 @@
   const pmrem = new PMREMGenerator(renderer);
   let envMap = $state<Texture | null>(null);
   $effect(() => {
-    envLoader.load(Environments[environment.value], (texture) => {
+    envLoader.load(Environments[Settings.environment], (texture) => {
       texture.mapping = EquirectangularReflectionMapping;
       envMap = pmrem.fromEquirectangular(texture).texture;
       envMap.mapping = CubeReflectionMapping;
@@ -65,64 +57,64 @@
     camera,
     renderer,
     (errors) => {
-      CPU.errors.value = errors;
+      CPU.errors = errors;
     },
     (errors) => {
-      GPU.errors.value = errors;
+      GPU.errors = errors;
     },
   );
 
   $effect(() => {
-    raymarcher.setBackgroundColor(backgroundColor.value);
+    raymarcher.setBackgroundColor(Settings.backgroundColor);
   });
 
   $effect(() => {
-    raymarcher.setDuration(animationDuration.value);
+    raymarcher.setDuration(Settings.animationDuration);
   });
 
   $effect(() => {
-    raymarcher.setEnvMapIntensity(environmentIntensity.value);
+    raymarcher.setEnvMapIntensity(Settings.environmentIntensity);
   });
 
   $effect(() => {
-    raymarcher.setCPUCode(CPU.code.value);
+    raymarcher.setCPUCode(CPU.code);
   });
 
   $effect(() => {
     if (!envMap) return;
-    raymarcher.setGPUCode(GPU.code.value, envMap);
+    raymarcher.setGPUCode(GPU.code, envMap);
   });
 
   $effect(() => {
-    if (isRenderingVideo.value) return;
+    if (Video.isRendering) return;
     renderer.setAnimationLoop(() => (
-      raymarcher.render((performance.now() / 1000) % animationDuration.value)
+      raymarcher.render((performance.now() / 1000) % Settings.animationDuration)
     ));
   });
 
   $effect(() => {
-    if (!isRenderingVideo.value || !hasLoadedFFmpeg.value) return;
+    if (!Video.isRendering || !Video.hasLoadedFFmpeg) return;
     renderer.setAnimationLoop(null);
-    untrack(() => videoRenderingController.value?.abort());
+    untrack(() => Video.renderingController?.abort());
     (async () => {
       const controller = new AbortController();
-      const duration = untrack(() => animationDuration.value);
-      videoRenderingController.value = controller;
+      const duration = untrack(() => Settings.animationDuration);
+      Video.renderingController = controller;
       let blob: Blob | undefined;
       try {
         blob = await encodeVideo(controller, duration, 60, (time) => {
           raymarcher.render(time);
           return renderer.domElement.toDataURL();
         }, (stage, progress) => {
-          videoRenderingProgress.value = { stage, progress };
+          Video.renderingProgress = { stage, progress };
         });
       } catch (e) {
         if (!(e instanceof Error && e.name === 'AbortError')) {
           throw e;
         }
       }
-      isRenderingVideo.value = false;
-      videoRenderingProgress.value = { stage: 'render', progress: 0 };
+      Video.isRendering = false;
+      Video.renderingProgress = { stage: 'render', progress: 0 };
       if (!blob) {
         return;
       }
@@ -140,11 +132,11 @@
 </script>
 
 <div class="viewport" bind:this={viewport}>
-  {#if isRenderingVideo.value}
+  {#if Video.isRendering}
     <div class="video">
-      <div>{videoRenderingStages[videoRenderingProgress.value.stage]}</div>
+      <div>{videoRenderingStages[Video.renderingProgress.stage]}</div>
       <div>
-        <progress value={videoRenderingProgress.value.progress}></progress>
+        <progress value={Video.renderingProgress.progress}></progress>
       </div>
     </div>
   {/if}

@@ -166,8 +166,8 @@
   let isFromUpdate = false;
   const save = async () => {
     isFromEditor = true;
-    file.code.value = editor.getValue();
-    file.hasModified.value = false;
+    file.code = editor.getValue();
+    file.hasModified = false;
     await tick();
     isFromEditor = false;
   };
@@ -182,9 +182,9 @@
   };
 
   $effect(() => {
-    const { value } = file.code;
+    const { code } = file;
     isFromUpdate = true;
-    !isFromEditor && editor?.setValue(value);
+    !isFromEditor && editor?.setValue(code);
     isFromUpdate = false;
   });
 
@@ -198,12 +198,12 @@
       editor.setModel(model);
       editor.restoreViewState(view);
     } else {
-      editor.setModel(monaco.editor.createModel(untrack(() => file.code.value), file.lang));
+      editor.setModel(monaco.editor.createModel(untrack(() => file.code), file.lang));
     }
     editor.onDidChangeModelContent(() => {
       if (isFromUpdate) return;
-      file.errors.value = [];
-      file.hasModified.value = true;
+      file.errors = [];
+      file.hasModified = true;
     });
     window.addEventListener('resize', resize);
     return () => {
@@ -221,7 +221,7 @@
     monaco.editor.setModelMarkers(
       editor.getModel()!,
       'Errors',
-      file.errors.value.map(({ line = lastLine, start = 0, end = 0, message }) => ({
+      file.errors.map(({ line = lastLine, start = 0, end = 0, message }) => ({
         message,
         startLineNumber: line,
         endLineNumber: line,

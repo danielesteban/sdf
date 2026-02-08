@@ -1,13 +1,6 @@
 <script lang="ts">
   import * as Environments from 'textures/Environments';
-  import {
-    animationDuration,
-    backgroundColor,
-    environment,
-    environmentIntensity,
-    viewportScale,
-    viewportSize,
-  } from 'core/Scene.svelte';
+  import { Settings } from 'core/Scene.svelte';
 
   const aspectRatios = [
     { name: '1:1', width: 1080, height: 1080 },
@@ -30,15 +23,15 @@
   ];
 
   const setDuration = (value: number) => () => {
-    animationDuration.value = value;
+    Settings.animationDuration = value;
   };
 
   const setScale = (value: number) => () => {
-    viewportScale.value = value;
+    Settings.viewportScale = value;
   };
 
   const setSize = (width: number, height: number) => () => {
-    viewportSize.value = { width, height };
+    Settings.viewportSize = { width, height };
   };
 
   let colorInput: HTMLInputElement;
@@ -53,7 +46,7 @@
     <div class="options">
       {#each aspectRatios as { name, width, height }}
         <button
-          class:active={viewportSize.value.width === width && viewportSize.value.height === height}
+          class:active={Settings.viewportSize.width === width && Settings.viewportSize.height === height}
           onclick={setSize(width, height)}
         >
           {name}
@@ -67,14 +60,14 @@
       aria-label="background"
       class="color"
       onclick={toggleColorInput}
-      style="background: {backgroundColor.value}"
+      style="background: {Settings.backgroundColor}"
     >
-      <input type="color" bind:this={colorInput} bind:value={backgroundColor.value} />
+      <input type="color" bind:this={colorInput} bind:value={Settings.backgroundColor} />
     </button>
   </div>
   <div>
     <label for="settingsEnvironment">Environment</label>
-    <select id="settingsEnvironment" bind:value={environment.value}>
+    <select id="settingsEnvironment" bind:value={Settings.environment}>
       {#each Object.keys(Environments) as id}
         <option value={id}>
           {id}
@@ -90,17 +83,17 @@
       min={0}
       max={1}
       step={0.01}
-      bind:value={environmentIntensity.value}
+      bind:value={Settings.environmentIntensity}
     />
   </div>
   <div>
     <label for="settingsLoopDuration">
-      Loop Duration <span class="time">({Math.floor(animationDuration.value)}s)</span>
+      Loop Duration <span class="time">({Math.floor(Settings.animationDuration)}s)</span>
     </label>
     <div class="options">
       {#each durations as { name, value }}
         <button
-          class:active={animationDuration.value === value}
+          class:active={Settings.animationDuration === value}
           onclick={setDuration(value)}
         >
           {name}
@@ -113,7 +106,7 @@
     <div class="options">
       {#each scales as { name, value }}
         <button
-          class:active={viewportScale.value === value}
+          class:active={Settings.viewportScale === value}
           onclick={setScale(value)}
         >
           {name}

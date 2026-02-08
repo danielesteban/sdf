@@ -2,8 +2,7 @@
   import {
     CPU,
     GPU,
-    isRenderingVideo,
-    videoRenderingController,
+    Video,
     load,
     save,
     reset,
@@ -28,10 +27,10 @@
   };
 
   const renderVideo = () => {
-    if (isRenderingVideo.value) {
-      videoRenderingController.value?.abort();
+    if (Video.isRendering) {
+      Video.renderingController?.abort();
     } else {
-      isRenderingVideo.value = true;
+      Video.isRendering = true;
     }
   };
 </script>
@@ -40,14 +39,14 @@
   <div class="tabs">
     <button
       class:active={tab === 'gpu'}
-      class:modified={GPU.hasModified.value}
+      class:modified={GPU.hasModified}
       onclick={setTab('gpu')}
     >
       GPU
     </button>
     <button
       class:active={tab === 'cpu'}
-      class:modified={CPU.hasModified.value}
+      class:modified={CPU.hasModified}
       onclick={setTab('cpu')}
     >
       CPU
@@ -81,8 +80,8 @@
       </button>
     </div>
     <div>
-      <button class:abort={isRenderingVideo.value} onclick={renderVideo}>
-        {#if isRenderingVideo.value}
+      <button class:abort={Video.isRendering} onclick={renderVideo}>
+        {#if Video.isRendering}
           Abort Rendering
         {:else}
           Render Video

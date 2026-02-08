@@ -1,5 +1,4 @@
 import { type editor } from 'monaco-editor/esm/vs/editor/editor.api.js';
-import { loadFFmpeg } from 'core/Video';
 import * as Environments from 'textures/Environments';
 
 const defaultScene = {
@@ -112,20 +111,6 @@ export const Settings = {
   set viewportSize(value) { viewportSize = value },
 };
 
-let hasLoadedFFmpeg = $state(false);
-let videoIsRendering = $state(false);
-let videoRenderingController = $state<AbortController | null>(null);
-let videoRenderingProgress = $state<{ stage: 'encode' | 'render'; progress: number }>({ stage: 'render', progress: 0 });
-export const Video = {
-  get hasLoadedFFmpeg() { return hasLoadedFFmpeg },
-  get isRendering() { return videoIsRendering },
-  set isRendering(value) { videoIsRendering = value },
-  get renderingController() { return videoRenderingController },
-  set renderingController(value) { videoRenderingController = value },
-  get renderingProgress() { return videoRenderingProgress },
-  set renderingProgress(value) { videoRenderingProgress = value },
-};
-
 const serializeScene = () => JSON.stringify({
   version: 1,
   CPUCode: CPU.code,
@@ -231,8 +216,4 @@ document.addEventListener('drop', (e) => {
     return;
   }
   loadFile(file);
-});
-
-loadFFmpeg().then(() => {
-  hasLoadedFFmpeg = true;
 });

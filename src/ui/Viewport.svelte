@@ -15,9 +15,8 @@
     CPU,
     GPU,
     Settings,
-    Video,
   } from 'core/Scene.svelte';
-  import { encodeVideo } from 'core/Video';
+  import { Video } from 'core/Video.svelte';
   import * as Environments from 'textures/Environments';
 
   const camera = new PerspectiveCamera(75, 1, 0.1, 1000);
@@ -102,7 +101,7 @@
       Video.renderingController = controller;
       let blob: Blob | undefined;
       try {
-        blob = await encodeVideo(controller, duration, 60, (time) => {
+        blob = await Video.encode(controller, duration, 60, (time) => {
           raymarcher.render(time);
           return renderer.domElement.toDataURL();
         }, (stage, progress) => {

@@ -2,11 +2,11 @@
   import {
     CPU,
     GPU,
-    Video,
     load,
     save,
     reset,
   } from 'core/Scene.svelte';
+  import { Video } from 'core/Video.svelte';
   import Monaco from 'ui/Monaco.svelte';
   import Reference from 'ui/Reference.svelte';
   import Settings from 'ui/Settings.svelte';

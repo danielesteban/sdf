@@ -55,7 +55,7 @@
 </div>
 
 <div class="credits">
-  <a href="https://dani.gatunes.com" rel="noopener noreferrer" target="_blank">dani@gatunes</a> © 2024
+  <a href="https://dani.gatunes.com" rel="noopener noreferrer" target="_blank">dani@gatunes</a> © 2026
 </div>
 
 <style>

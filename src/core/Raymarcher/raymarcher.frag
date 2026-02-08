@@ -264,7 +264,6 @@ vec3 getLight(const in vec3 position, const in vec3 normal, const in vec3 diffus
 }
 
 void march(inout vec4 color, inout float distance) {
-  float closest = MAX_DISTANCE;
   float coverage = 1.0;
   float coneRadius = (2.0 * tan(cameraFov / 2.0)) / resolution.y;
   float t = cameraNear;
@@ -277,9 +276,8 @@ void march(inout vec4 color, inout float distance) {
       float alpha = smoothstep(cone, -cone, step.distance);
       color.rgb += coverage * (alpha * pixel);
       coverage *= (1.0 - alpha);
-      if (step.distance < closest) {
-        closest = step.distance;
-        distance = t + step.distance;
+      if (t < distance) {
+        distance = t;
       }
       if (coverage <= MIN_COVERAGE) {
         break;

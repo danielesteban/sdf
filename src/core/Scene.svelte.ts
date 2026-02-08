@@ -68,11 +68,11 @@ let CPUHasModified = $state(false);
 export const CPU: File = {
   get code() { return CPUCode },
   set code(value) { CPUCode = value },
-  context: null,
   get errors() { return CPUErrors },
   set errors(value) { CPUErrors = value },
   get hasModified() { return CPUHasModified },
   set hasModified(value) { CPUHasModified = value },
+  context: null,
   lang: 'javascript',
 };
 
@@ -82,11 +82,11 @@ let GPUHasModified = $state(false);
 export const GPU: File = {
   get code() { return GPUCode },
   set code(value) { GPUCode = value },
-  context: null,
   get errors() { return GPUErrors },
   set errors(value) { GPUErrors = value },
   get hasModified() { return GPUHasModified },
   set hasModified(value) { GPUHasModified = value },
+  context: null,
   lang: 'glsl',
 };
 
@@ -113,13 +113,13 @@ export const Settings = {
 
 const serializeScene = () => JSON.stringify({
   version: 1,
-  CPUCode: CPU.code,
-  GPUCode: GPU.code,
-  animationDuration: animationDuration,
-  backgroundColor: backgroundColor,
-  environment: environment,
-  environmentIntensity: environmentIntensity,
-  viewportSize: viewportSize,
+  CPUCode,
+  GPUCode,
+  animationDuration,
+  backgroundColor,
+  environment,
+  environmentIntensity,
+  viewportSize,
 });
 
 const deserializeScene = (json: string) => {
@@ -129,14 +129,14 @@ const deserializeScene = (json: string) => {
   } catch (e) {
     return;
   }
-  CPU.code = data.CPUCode;
+  CPUCode = data.CPUCode;
+  CPUErrors = [];
+  CPUHasModified = false;
   CPU.context = null;
-  CPU.errors = [];
-  CPU.hasModified = false;
-  GPU.code = data.GPUCode;
+  GPUCode = data.GPUCode;
+  GPUErrors = [];
+  GPUHasModified = false;
   GPU.context = null;
-  GPU.errors = [];
-  GPU.hasModified = false;
   animationDuration = data.animationDuration;
   backgroundColor = data.backgroundColor;
   environment = data.environment;
@@ -198,7 +198,7 @@ if (storedSettings) {
 }
 
 window.addEventListener('beforeunload', (e) => {
-  if (CPU.hasModified || GPU.hasModified) {
+  if (CPUHasModified || GPUHasModified) {
     e.preventDefault();
     return;
   }
